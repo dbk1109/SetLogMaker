@@ -1,0 +1,384 @@
+@import url("https://fonts.googleapis.com/css?family=Black+Han+Sans:400");
+* {
+  font-family: "GMarketSans";
+}
+
+:root {
+  --lightGrey: #F5F5F5;
+  --line: 1px dashed blueviolet;
+}
+
+/* =========================
+   FONT
+========================= */
+@font-face {
+  font-family: "GMarketSans";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff") format("woff");
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GMarketSans";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff");
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "GMarketSans";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff");
+  font-weight: 700;
+  font-display: swap;
+}
+/* =========================
+   RESET
+========================= */
+html, body {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+}
+
+textarea, input {
+  border: unset;
+  resize: none;
+  border-radius: 5px;
+}
+
+button {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: inherit;
+  box-shadow: none;
+  overflow: visible;
+  cursor: pointer;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 50px;
+  position: relative;
+  padding: 50px;
+  box-sizing: border-box;
+  background: #1F1C17;
+}
+body section {
+  height: 100vh;
+  max-height: 90vh;
+}
+
+#setting {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+#visual {
+  flex-shrink: 0;
+  width: 420px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 10px;
+  box-sizing: border-box;
+  border: 5px solid blueviolet;
+  border-radius: 43px;
+  overflow: hidden;
+  background: white;
+}
+
+/* =========================
+   TOP AREA
+========================= */
+.Area {
+  display: flex;
+  flex-direction: column;
+}
+.Area--title {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  height: 42px;
+  padding: 0 6px;
+}
+.Area--title > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.Area--title > div > * {
+  height: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+.Area--title__left, .Area--title__right {
+  gap: 14px;
+}
+.Area--title__left i, .Area--title__right i {
+  width: 42px;
+  background: var(--lightGrey);
+  border-radius: 40px;
+}
+.Area--title__middle {
+  position: absolute;
+  width: 100%;
+}
+.Area--title__middle h1 {
+  max-width: 160px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 16px;
+  text-align: left;
+  background: var(--lightGrey);
+  border-radius: 40px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.Area--dots {
+  width: 100%;
+  height: 10px;
+  margin: 14px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+.Area--dots span {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #D7D7D5;
+}
+.Area--dots span:last-child {
+  background: #1F1C17;
+  border: 1px solid white;
+  outline: 2px solid #D7D7D5;
+}
+
+/* =========================
+   VIDEO AREA
+========================= */
+.Videos {
+  height: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.Videos > div {
+  height: 50%;
+  max-height: 220px;
+  padding: 14px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.Videos--users {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: white;
+}
+.Videos--users__back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  background: black;
+}
+.Videos--users__back video {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+.Videos--users__profile {
+  height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.Videos--users__profile img {
+  width: 30px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: white;
+}
+.Videos--users__profile p {
+  font-size: 18px;
+  font-weight: 600;
+}
+.Videos--users__middle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.Videos--users__middle h3 {
+  font-family: "Black Han Sans", sans-serif;
+  font-size: 30px;
+}
+.Videos--users__middle p {
+  font-size: 14px;
+}
+.Videos--users__rights {
+  text-align: right;
+}
+
+.Last {
+  height: 35px;
+}
+
+/* =========================
+   SETTING
+========================= */
+.SettingUser {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.SettingUser > h2 {
+  width: 100%;
+}
+.SettingUser--profile {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+/* =========================
+   TIMELINE
+========================= */
+.Timeline {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 1400px) {
+  .Timeline {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+@media (max-width: 1200px) {
+  .Timeline {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (max-width: 900px) {
+  .Timeline {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 700px) {
+  .Timeline {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.Timeline--item {
+  min-width: 0;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+.thumb video {
+  width: 100%;
+  height: 100%;
+  -o-object-fit: cover;
+     object-fit: cover;
+}
+
+/* =========================
+   BUTTON
+========================= */
+.btn {
+  padding: 16px;
+  background: blueviolet;
+  color: white;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 700;
+  transition: 0.2s;
+}
+.btn:hover {
+  opacity: 0.8;
+}
+
+#playAll,
+#exportVideo {
+  position: fixed;
+  right: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#playAll {
+  bottom: 120px;
+}
+
+#exportVideo {
+  bottom: 50px;
+}
+
+/* =========================
+   PROFILE UPLOAD
+========================= */
+.profile-upload {
+  aspect-ratio: 1/1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--lightGrey);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  font-size: 26px;
+  font-weight: 300;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.profile-upload:hover {
+  opacity: 0.7;
+}
+
+/* =========================
+   INPUT
+========================= */
+.nickname-input {
+  padding: 10px;
+  border-bottom: 2px solid blueviolet;
+}
+
+.slot-text {
+  width: 100%;
+  margin-top: 5px;
+  border-bottom: 2px solid #e5e5e5;
+  min-height: 10px;
+}/*# sourceMappingURL=style.min.css.map */

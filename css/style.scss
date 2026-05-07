@@ -1,0 +1,467 @@
+* {
+  font-family: 'GMarketSans';
+}
+
+:root {
+  --lightGrey: #F5F5F5;
+  --line: 1px dashed blueviolet;
+}
+
+/* =========================
+   FONT
+========================= */
+
+@font-face {
+  font-family: 'GMarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff') format('woff');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GMarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GMarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@import url('https://fonts.googleapis.com/css?family=Black+Han+Sans:400');
+
+/* =========================
+   RESET
+========================= */
+
+html,body{width:100%;height:100%;padding:0;margin:0;}h1,h2,h3,h4,h5,h6,p{margin:0;}textarea,input{border:unset;resize:none;border-radius:5px;}button{padding:0;border:none;border-radius:0;background:inherit;box-shadow:none;overflow:visible;cursor:pointer;}
+
+/* =========================
+   LAYOUT
+========================= */
+
+$visualWidth: 420px;
+
+body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 50px;
+
+  position: relative;
+
+  padding: 50px;
+  box-sizing: border-box;
+
+  background: #1F1C17;
+
+  section {
+    height: 100vh;
+    max-height: 90vh;
+  }
+}
+
+#setting {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+#visual {
+  flex-shrink: 0;
+  width: $visualWidth;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  padding: 24px 10px;
+  box-sizing: border-box;
+
+  border: 5px solid blueviolet;
+  border-radius: 43px;
+
+  overflow: hidden;
+  background: white;
+}
+
+/* =========================
+   TOP AREA
+========================= */
+
+.Area {
+  display: flex;
+  flex-direction: column;
+
+  &--title {
+    $size: 42px;
+
+    position: relative;
+
+    display: flex;
+    justify-content: space-between;
+
+    height: $size;
+    padding: 0 6px;
+
+    > div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      > * {
+        height: $size;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        box-sizing: border-box;
+      }
+    }
+
+    &__left,
+    &__right {
+      gap: 14px;
+
+      i {
+        width: $size;
+
+        background: var(--lightGrey);
+        border-radius: 40px;
+      }
+    }
+
+    &__middle {
+      position: absolute;
+      width: 100%;
+
+      h1 {
+        max-width: 160px;
+
+        padding: 20px;
+
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        font-size: 16px;
+        text-align: left;
+
+        background: var(--lightGrey);
+        border-radius: 40px;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  &--dots {
+    $dotSize: 10px;
+
+    width: 100%;
+    height: $dotSize;
+
+    margin: 14px 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+
+    span {
+      display: block;
+
+      width: $dotSize;
+      height: $dotSize;
+
+      border-radius: 50%;
+
+      background: #D7D7D5;
+
+      &:last-child {
+        background: #1F1C17;
+
+        border: 1px solid white;
+        outline: 2px solid #D7D7D5;
+      }
+    }
+  }
+}
+
+/* =========================
+   VIDEO AREA
+========================= */
+
+.Videos {
+  height: 420px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  > div {
+    height: 50%;
+    max-height: 220px;
+
+    padding: 14px;
+
+    border-radius: 20px;
+
+    overflow: hidden;
+  }
+
+  &--users {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    color: white;
+
+    &__back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+
+      width: 100%;
+      height: 100%;
+
+      background: black;
+
+      video {
+        width: 100%;
+        height: 100%;
+
+        object-fit: cover;
+      }
+    }
+
+    &__profile {
+      $imgSize: 30px;
+
+      height: $imgSize;
+
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      img {
+        width: $imgSize;
+
+        aspect-ratio: 1 / 1;
+
+        border-radius: 50%;
+
+        overflow: hidden;
+
+        background: white;
+      }
+
+      p {
+        font-size: 18px;
+        font-weight: 600;
+      }
+    }
+
+    &__middle {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+
+      h3 {
+        font-family: "Black Han Sans", sans-serif;
+        font-size: 30px;
+      }
+
+      p {
+        font-size: 14px;
+      }
+    }
+
+    &__rights {
+      text-align: right;
+    }
+  }
+}
+
+.Last {
+  height: 35px;
+}
+
+/* =========================
+   SETTING
+========================= */
+
+.SettingUser {
+  width: 100%;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+
+  > h2 {
+    width: 100%;
+  }
+
+  &--profile {
+    width: 100%;
+
+    display: flex;
+    gap: 10px;
+  }
+}
+
+/* =========================
+   TIMELINE
+========================= */
+
+.Timeline {
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+
+  gap: 10px;
+}
+
+@media (max-width: 1400px) {
+  .Timeline {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .Timeline {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .Timeline {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 700px) {
+  .Timeline {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.Timeline--item {
+  min-width: 0;
+
+  padding: 20px;
+
+  background: white;
+  border-radius: 10px;
+
+  box-sizing: border-box;
+}
+
+.thumb video {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+/* =========================
+   BUTTON
+========================= */
+
+.btn {
+  padding: 16px;
+
+  background: blueviolet;
+  color: white;
+
+  border-radius: 10px;
+
+  font-size: 20px;
+  font-weight: 700;
+
+  transition: .2s;
+
+  &:hover {
+    opacity: .8;
+  }
+}
+
+#playAll,
+#exportVideo {
+  position: fixed;
+  right: 50px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#playAll {
+  bottom: 120px;
+}
+
+#exportVideo {
+  bottom: 50px;
+}
+/* =========================
+   PROFILE UPLOAD
+========================= */
+
+.profile-upload {
+  aspect-ratio: 1 / 1;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+
+  background: var(--lightGrey);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  font-size: 26px;
+  font-weight: 300;
+
+  cursor: pointer;
+
+  transition: .2s;
+
+  &:hover {
+    opacity: .7;
+  }
+}
+
+/* =========================
+   INPUT
+========================= */
+
+.nickname-input {
+  padding: 10px;
+
+  border-bottom: 2px solid blueviolet;
+}
+.slot-text {
+  width: 100%;
+  margin-top: 5px;
+  border-bottom: 2px solid #e5e5e5;
+  min-height: 10px;
+}
