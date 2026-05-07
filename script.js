@@ -295,7 +295,6 @@ syncVisual("user2");
 /* =========================
    EXPORT
 ========================= */
-
 const { FFmpeg } = FFmpegWASM;
 
 const ffmpeg = new FFmpeg();
@@ -304,9 +303,7 @@ async function loadFFmpeg() {
   if (ffmpeg.loaded) return;
 
   await ffmpeg.load({
-    coreURL: "./ffmpeg/ffmpeg-core.js",
-    wasmURL: "./ffmpeg/ffmpeg-core.wasm",
-    workerURL: "./ffmpeg/ffmpeg-core.worker.js",
+    coreURL: "/ffmpeg/ffmpeg-core.js",
   });
 }
 
