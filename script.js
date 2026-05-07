@@ -295,9 +295,18 @@ syncVisual("user2");
 /* =========================
    EXPORT
 ========================= */
+
 const { FFmpeg } = FFmpegWASM;
 
 const ffmpeg = new FFmpeg();
+
+ffmpeg.on("log", ({ message }) => {
+  console.log("[FFMPEG]", message);
+});
+
+ffmpeg.on("progress", ({ progress }) => {
+  console.log("progress", progress);
+});
 
 async function loadFFmpeg() {
   if (ffmpeg.loaded) return;
@@ -310,6 +319,9 @@ async function loadFFmpeg() {
 }
 
 exportButton.addEventListener("click", async () => {
+
+  console.log("export start");
+
   exportButton.disabled = true;
 
   exportButton.textContent = "영상 생성 중...";
@@ -368,10 +380,7 @@ exportButton.addEventListener("click", async () => {
     concatText += `file '${name}'\n`;
   });
 
-  await ffmpeg.writeFile(
-    "concat.txt",
-    new TextEncoder().encode(concatText)
-  );
+  await ffmpeg.writeFile("concat.txt", new TextEncoder().encode(concatText));
 
   /* 최종 합치기 */
 
@@ -395,10 +404,7 @@ exportButton.addEventListener("click", async () => {
 
   const data = await ffmpeg.readFile("final.mp4");
 
-  const videoBlob = new Blob(
-    [data.buffer],
-    { type: "video/mp4" }
-  );
+  const videoBlob = new Blob([data.buffer], { type: "video/mp4" });
 
   const url = URL.createObjectURL(videoBlob);
 
