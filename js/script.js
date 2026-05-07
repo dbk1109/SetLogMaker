@@ -234,3 +234,5 @@ renderTimeline("user1");
 renderTimeline("user2");
 syncVisual("user1", 0);
 syncVisual("user2", 0);
+
+window.state = state;
