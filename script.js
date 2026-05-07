@@ -303,7 +303,11 @@ const ffmpeg = new FFmpeg();
 async function loadFFmpeg() {
   if (ffmpeg.loaded) return;
 
-  await ffmpeg.load();
+  await ffmpeg.load({
+    coreURL: "./ffmpeg/ffmpeg-core.js",
+    wasmURL: "./ffmpeg/ffmpeg-core.wasm",
+    workerURL: "./ffmpeg/ffmpeg-core.worker.js",
+  });
 }
 
 exportButton.addEventListener("click", async () => {
@@ -418,4 +422,8 @@ exportButton.addEventListener("click", async () => {
   exportButton.disabled = false;
 
   exportButton.textContent = "최종 영상 저장";
+});
+
+ffmpeg.on("log", ({ message }) => {
+  console.log(message);
 });
