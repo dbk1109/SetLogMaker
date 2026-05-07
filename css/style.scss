@@ -403,8 +403,8 @@ body {
 
 #playAll,
 #exportVideo {
-  position: fixed;
-  right: 50px;
+  position: absolute;
+  right: 0;
 
   display: flex;
   justify-content: center;
@@ -412,7 +412,7 @@ body {
 }
 
 #playAll {
-  bottom: 120px;
+  top: 0px;
 }
 
 #exportVideo {

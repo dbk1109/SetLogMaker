@@ -328,6 +328,8 @@ exportButton.addEventListener("click", async () => {
 
   await loadFFmpeg();
 
+  console.log("ffmpeg loaded");
+  
   const tempVideos = [];
 
   for (let i = 0; i < 12; i++) {
@@ -393,9 +395,6 @@ exportButton.addEventListener("click", async () => {
 
     "-i",
     "concat.txt",
-
-    "-c",
-    "copy",
 
     "final.mp4",
   ]);
