@@ -60,8 +60,8 @@ body {
   background: #1F1C17;
 
   section {
-    height: 100vh;
-    max-height: 90vh;
+    height: 100%;
+    min-height: 820px;
   }
 }
 
@@ -466,4 +466,101 @@ body {
   margin-top: 5px;
   border-bottom: 2px solid #e5e5e5;
   min-height: 10px;
+}
+
+
+/* =========================
+   SAFE RESPONSIVE PATCH
+   (기존 디자인 유지용)
+========================= */
+/* =========================
+   TABLET
+========================= */
+
+@media (max-width: 1024px) {
+  body {
+    flex-direction: column !important;
+    align-items: center !important;
+    section {
+      height: auto;
+      min-height: auto;
+    }
+  }
+
+  #visual {
+    width: min(420px, 100%) !important;
+    margin-top: 20px;
+  }
+
+  #setting {
+    width: 100%;
+  }
+}
+
+/* =========================
+   MOBILE LANDSCAPE (핵심)
+========================= */
+
+@media (max-width: 900px) and (orientation: landscape) {
+  body {
+    flex-direction: row !important;
+    padding: 20px !important;
+    gap: 20px !important;
+  }
+
+  #setting {
+    width: 55%;
+    overflow-y: auto;
+  }
+
+  #visual {
+    width: 45%;
+    border-radius: 30px;
+  }
+
+  .Videos {
+    height: auto !important;
+  }
+}
+
+/* =========================
+   MOBILE PORTRAIT
+========================= */
+
+@media (max-width: 600px) {
+  body {
+    flex-direction: column !important;
+    padding: 16px !important;
+    gap: 20px;
+  }
+
+  #visual {
+    width: 100% !important;
+    border-radius: 20px;
+    min-height: 820px;
+  }
+
+  #setting {
+    width: 100%;
+  }
+
+  .Timeline {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+}
+
+/* =========================
+   SAFETY FIX (깨짐 방지)
+========================= */
+
+/* flex shrink 방지 */
+#visual,
+#setting {
+  min-width: 0;
+}
+
+/* video overflow 방지 */
+.Videos--users__back video {
+  object-fit: cover;
 }
