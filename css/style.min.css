@@ -241,6 +241,7 @@ body section {
 }
 .Videos--users__middle p {
   font-size: 14px;
+  font-family: auto;
 }
 .Videos--users__rights {
   text-align: right;
