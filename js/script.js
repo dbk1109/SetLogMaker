@@ -164,6 +164,16 @@ document.querySelectorAll(".SettingUser").forEach((setting) => {
   });
 });
 
+
+const dots = document.querySelectorAll(".Area--dots span");
+
+function setProgress(index) {
+  dots.forEach((dot, i) => {
+    dot.classList.toggle("active", i === index);
+  });
+}
+
+
 /* =========================
    VISUAL 동기화
 ========================= */
@@ -220,6 +230,9 @@ document.querySelector("#playAll").addEventListener("click", async () => {
   for (let i = 0; i < 12; i++) {
     syncVisual("user1", i);
     syncVisual("user2", i);
+
+    setProgress(i);
+
     await new Promise((r) => setTimeout(r, 2000));
   }
 

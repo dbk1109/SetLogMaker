@@ -165,7 +165,7 @@ body section {
   border-radius: 50%;
   background: #D7D7D5;
 }
-.Area--dots span:last-child {
+.Area--dots span.active {
   background: #1F1C17;
   border: 1px solid white;
   outline: 2px solid #D7D7D5;
