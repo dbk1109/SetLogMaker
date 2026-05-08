@@ -1,8 +1,4 @@
 const TIMES = [
-  "12:00",
-  "1:00",
-  "2:00",
-  "3:00",
   "4:00",
   "5:00",
   "6:00",
@@ -11,24 +7,23 @@ const TIMES = [
   "9:00",
   "10:00",
   "11:00",
+  "12:00",
+  "1:00",
+  "2:00",
+  "3:00",
 ];
-
 
 const state = {
   user1: [],
   user2: [],
 };
 
-let isPlaying = false;
-
-/* =========================
-   안전 DOM 접근
-========================= */
-const exportButton = document.querySelector("#exportVideo");
+window.isPlaying = false;
 
 /* =========================
    슬롯 생성
 ========================= */
+
 function createDefaultSlots(user) {
   state[user] = TIMES.map(() => ({
     id: crypto.randomUUID(),
@@ -44,15 +39,19 @@ createDefaultSlots("user2");
 /* =========================
    타임라인 렌더
 ========================= */
+
 function renderTimeline(user) {
   const timeline = document.querySelector(`#timeline-${user}`);
+
   if (!timeline) return;
 
   timeline.innerHTML = "";
 
   state[user].forEach((slot, index) => {
     const item = document.createElement("div");
+
     item.className = "Timeline--item";
+
     item.dataset.id = slot.id;
 
     item.innerHTML = `
@@ -64,7 +63,10 @@ function renderTimeline(user) {
         }
       </div>
 
-      <textarea class="slot-text" data-index="${index}">${slot.text}</textarea>
+      <textarea
+        class="slot-text"
+        data-index="${index}"
+      >${slot.text}</textarea>
     `;
 
     timeline.appendChild(item);
@@ -76,14 +78,18 @@ function renderTimeline(user) {
 /* =========================
    SORTABLE
 ========================= */
+
 function initSortable(user) {
   const timeline = document.querySelector(`#timeline-${user}`);
+
   if (!timeline) return;
 
   timeline._sortable?.destroy();
 
   timeline._sortable = new Sortable(timeline, {
     animation: 150,
+
+    disabled: window.isSortLocked,
 
     ghostClass: "sortable-ghost",
     chosenClass: "sortable-chosen",
@@ -108,8 +114,10 @@ function initSortable(user) {
 /* =========================
    업로드
 ========================= */
+
 document.querySelectorAll(".SettingUser").forEach((setting) => {
   const user = setting.dataset.user;
+
   const videoInput = setting.querySelector(".video-input");
 
   videoInput.addEventListener("change", (e) => {
@@ -123,57 +131,73 @@ document.querySelectorAll(".SettingUser").forEach((setting) => {
       }
 
       state[user][index].video = file;
+
       state[user][index].videoURL = URL.createObjectURL(file);
     });
 
     renderTimeline(user);
+
     syncVisual(user, 0);
   });
 });
 
 /* =========================
-   텍스트 입력 (핵심 수정)
+   텍스트 입력
 ========================= */
+
 document.addEventListener("input", (e) => {
   if (!e.target.classList.contains("slot-text")) return;
 
   const user = e.target.closest(".SettingUser").dataset.user;
+
   const index = Number(e.target.dataset.index);
 
   state[user][index].text = e.target.value;
 
-  syncVisual(user, index); // ⭐ 핵심
+  syncVisual(user, index);
 });
 
 /* =========================
    프로필
 ========================= */
+
 document.querySelectorAll(".SettingUser").forEach((setting) => {
   const user = setting.dataset.user;
 
   const profileInput = setting.querySelector(".profile-input");
+
   const nicknameInput = setting.querySelector(".nickname-input");
 
   profileInput.addEventListener("change", (e) => {
     const file = e.target.files[0];
+
     if (!file) return;
 
     const url = URL.createObjectURL(file);
 
     const img = document.querySelector(`#${user} .Videos--users__profile img`);
+
     if (img) img.src = url;
 
     const preview = setting.querySelector(".profile-upload");
+
     preview.style.backgroundImage = `url(${url})`;
+
     preview.textContent = "";
   });
 
   nicknameInput.addEventListener("input", (e) => {
     const el = document.querySelector(`#${user} .nickname`);
-    if (el) el.textContent = e.target.value || user;
+
+    if (el) {
+      el.textContent = e.target.value || user;
+    }
   });
 });
 
+/* =========================
+   DOTS
+========================= */
 
 const dots = document.querySelectorAll(".Menu--dots span");
 
@@ -182,85 +206,6 @@ function setProgress(index) {
     dot.classList.toggle("active", i === index);
   });
 }
-
-
-/* =========================
-   VISUAL 동기화
-========================= */
-function syncVisual(user, index = 0) {
-  const slot = state[user][index];
-  if (!slot) return;
-
-  const back = document.querySelector(`#${user} .Videos--users__back`);
-  const timeEl = document.querySelector(`#${user} .Videos--users__middle h3`);
-  const textEl = document.querySelector(`#${user} .Videos--users__middle p`);
-
-  if (!back || !timeEl || !textEl) return;
-
-  back.innerHTML = "";
-
-  if (slot.videoURL) {
-    const video = document.createElement("video");
-
-    video.src = slot.videoURL;
-    video.autoplay = true;
-    video.muted = true;
-    video.playsInline = true;
-
-    video.addEventListener("loadedmetadata", () => {
-      video.currentTime = 0;
-      video.play();
-    });
-
-    video.addEventListener("timeupdate", () => {
-      if (video.currentTime >= 1) {
-        video.pause();
-        video.currentTime = 1;
-      }
-    });
-
-    back.appendChild(video);
-  }
-
-  timeEl.textContent = TIMES[index];
-  textEl.textContent = slot.text || "💤";
-}
-
-/* =========================
-   재생
-========================= */
-document.querySelector("#playAll").addEventListener("click", async () => {
-  if (isPlaying) return;
-
-  isPlaying = true;
-
-  const button = document.querySelector("#playAll");
-
-  button.textContent = "재생 중...";
-
-  const startTime = performance.now();
-
-  for (let i = 0; i < 12; i++) {
-    syncVisual("user1", i);
-
-    syncVisual("user2", i);
-
-    setProgress(i);
-
-    /* 정확히 2초 유지 */
-    const nextTime = startTime + (i + 1) * 2000;
-
-    const delay = nextTime - performance.now();
-
-    if (delay > 0) {
-      await new Promise((r) => setTimeout(r, delay));
-    }
-  }
-
-  button.textContent = "테스트 재생";
-
-  isPlaying = false;
-});
 
 /* =========================
    VIDEO 생성
@@ -298,21 +243,15 @@ function syncVisual(user, index = 0) {
 
   if (!back || !timeEl || !textEl) return;
 
-  /* =========================
-     VIDEO
-  ========================= */
-
   if (slot.videoURL) {
     let video = back.querySelector("video");
 
-    /* 처음만 생성 */
     if (!video) {
       video = createVideoElement(slot.videoURL);
 
       back.appendChild(video);
     }
 
-    /* src 변경 시만 교체 */
     if (video.src !== slot.videoURL) {
       video.src = slot.videoURL;
 
@@ -329,88 +268,129 @@ function syncVisual(user, index = 0) {
       );
     }
   } else {
-    /* 영상 없으면 제거 */
     back.innerHTML = "";
 
-    /* 검은 배경 유지 */
     back.style.background = "black";
   }
-
-  /* =========================
-     TEXT
-  ========================= */
 
   timeEl.textContent = TIMES[index];
 
   textEl.textContent = slot.text || "💤";
 }
 
+/* =========================
+   재생
+========================= */
+
+function updatePlayButtonUI() {
+  if (!playButton) return;
+
+  const icon = playButton.querySelector("i");
+  const text = playButton.querySelector("span");
+
+  playButton.classList.toggle("is-playing", window.isPlaying);
+  playButton.classList.toggle("is-idle", !window.isPlaying);
+
+  if (window.isPlaying) {
+    icon.className = "fa-solid fa-pause";
+    text.textContent = "일시정지";
+  } else {
+    icon.className = "fa-solid fa-play";
+    text.textContent = "전체 재생";
+  }
+}
+
+document.querySelector("#playAll").addEventListener("click", async () => {
+  if (window.isPlaying) return;
+
+  const isMobile = window.innerWidth <= 600;
+  const isFullscreen = !!document.fullscreenElement;
+
+  /* =========================
+     MOBILE NOTICE
+  ========================= */
+
+  if (isMobile && isFullscreen) {
+    const notice = document.querySelector("#playNotice");
+
+    notice?.classList.add("active");
+
+    return;
+  }
+
+  startPlayback();
+});
+
+async function startPlayback() {
+  if (window.isPlaying) return;
+
+  const isMobile = window.innerWidth <= 600;
+  const isFullscreen = !!document.fullscreenElement;
+
+  if (isMobile && isFullscreen) {
+    window.hideController?.();
+  }
+
+  window.isPlaying = true;
+
+  updatePlayButtonUI();
 
 
+  const startTime = performance.now();
+
+  for (let i = 0; i < TIMES.length; i++) {
+    if (!window.isPlaying) {
+      break;
+    }
+
+    syncVisual("user1", i);
+    syncVisual("user2", i);
+
+    setProgress(i);
+
+    const nextTime = startTime + (i + 1) * 2000;
+
+    const delay = nextTime - performance.now();
+
+    if (delay > 0) {
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
 
 
+  window.isPlaying = false;
+
+  if (isMobile && isFullscreen) {
+    window.showController?.();
+  }
+}
+
+window.startPlayback = startPlayback;
+
+const playButton = document.querySelector("#playAll");
 
 
 /* =========================
-   SORT LOCK
+   SORTABLE 상태 갱신
 ========================= */
 
-let isSortLocked = false;
-
-const toggleSortBtn = document.querySelector("#toggleSort");
-
-function updateSortableState() {
+window.updateSortableState = function () {
   ["user1", "user2"].forEach((user) => {
     const timeline = document.querySelector(`#timeline-${user}`);
 
     if (!timeline?._sortable) return;
 
-    timeline._sortable.option("disabled", isSortLocked);
+    timeline._sortable.option("disabled", window.isSortLocked);
   });
-}
-
-function updateSortButtonUI() {
-  if (!toggleSortBtn) return;
-
-  if (isSortLocked) {
-    toggleSortBtn.classList.remove("is-unlocked");
-    toggleSortBtn.classList.add("is-locked");
-
-    toggleSortBtn.innerHTML = `
-      <i class="fa-solid fa-lock"></i>
-      <span>순서 이동 잠금됨</span>
-    `;
-  } else {
-    toggleSortBtn.classList.remove("is-locked");
-    toggleSortBtn.classList.add("is-unlocked");
-
-    toggleSortBtn.innerHTML = `
-      <i class="fa-solid fa-lock-open"></i>
-      <span>순서 이동 가능</span>
-    `;
-  }
-}
-
-if (toggleSortBtn) {
-  toggleSortBtn.addEventListener("click", () => {
-    isSortLocked = !isSortLocked;
-
-    updateSortableState();
-    updateSortButtonUI();
-  });
-}
-
-
-
-
-
-
+};
 
 /* =========================
    초기 실행
 ========================= */
+
 renderTimeline("user1");
 renderTimeline("user2");
+
 syncVisual("user1", 0);
 syncVisual("user2", 0);
 
