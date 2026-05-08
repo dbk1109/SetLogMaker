@@ -141,8 +141,40 @@ const APP_CORE = {
     textEl.textContent = slot.text || "💤";
 
     if (slot.videoURL) {
-      back.innerHTML = `<video src="${slot.videoURL}" muted autoplay loop playsinline></video>`;
+      // 1. 새 영상 생성
+      const nextVideo = document.createElement('video');
+      nextVideo.src = slot.videoURL;
+      nextVideo.muted = true;
+      nextVideo.autoplay = true;
+      nextVideo.loop = true;
+      nextVideo.playsInline = true;
+
+      // 2. 스타일 설정 (기존 영상 위에 덮기)
+      nextVideo.style.position = "absolute";
+      nextVideo.style.inset = "0";
+      nextVideo.style.width = "100%";
+      nextVideo.style.height = "100%";
+      nextVideo.style.objectFit = "cover";
+      nextVideo.style.zIndex = "10"; // 확실히 위에 오도록
+
+      // 3. 일단 화면에 추가
+      back.appendChild(nextVideo);
+      nextVideo.play().catch(() => {});
+
+      // 4. [핵심] 아주 짧은 찰나(100ms) 뒤에 '나 자신'을 제외한 모든 형제 비디오 삭제
+      // 이렇게 하면 새 영상이 로딩되는 동안 기존 영상이 아래에 깔려있어 검은 화면을 막아줍니다.
+      setTimeout(() => {
+        const allVideos = back.querySelectorAll('video');
+        allVideos.forEach(v => {
+          if (v !== nextVideo) {
+            v.pause(); // 자원 점유 방지
+            v.remove(); // 삭제
+          }
+        });
+      }, 150); // 0.15초 뒤에 강제 청소
+
     } else {
+      // 영상이 없는 경우
       back.innerHTML = "";
       back.style.backgroundColor = "#000";
     }
