@@ -42,7 +42,7 @@ $colors: (
 ========================= */
 
 body {
-  @include flex-set(space-between);
+  @include flex-set(space-between, flex-start);
 
   position: relative;
 
@@ -61,6 +61,8 @@ body {
 
   flex: 1;
   min-width: 0;
+
+  height: auto;
 }
 
 #fullscreenWrap {
@@ -734,6 +736,7 @@ body {
   #setting {
     width: 100%;
 
+    height: unset;
     padding: 16px;
   }
 
