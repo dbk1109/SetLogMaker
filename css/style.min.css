@@ -316,7 +316,6 @@ body section {
   -o-object-fit: cover;
      object-fit: cover;
   opacity: 0.9;
-  transition: opacity 0.15s linear;
 }
 .Videos--users__profile {
   display: flex;

@@ -106,35 +106,50 @@ const APP_CORE = {
     this.updatePlayBtnUI();
   },
 
+  preloadNext(user, nextIndex) {
+    const nextSlot = this.state[user][nextIndex];
+    if (!nextSlot || !nextSlot.videoURL) return;
+
+    // 이미 미리 불러온 영상이 있는지 확인 (중복 방지)
+    const back = document.querySelector(`#${user} .Videos--users__back`);
+    const isAlreadyLoaded = Array.from(back.querySelectorAll("video")).some(
+      (v) => v.src === nextSlot.videoURL,
+    );
+
+    if (!isAlreadyLoaded) {
+      const preVideo = document.createElement("video");
+      preVideo.src = nextSlot.videoURL;
+      preVideo.preload = "auto"; // 브라우저에게 미리 받으라고 명령
+      preVideo.muted = true;
+      preVideo.style.display = "none"; // 일단 숨김
+      back.appendChild(preVideo);
+    }
+  },
+
   async startPlayback() {
     if (window.isPlaying) return;
-
-    const isMobileFS = window.innerWidth <= 768 && !!document.fullscreenElement;
-    if (isMobileFS)
-      document.querySelector(".controller")?.classList.add("is-hidden");
-
     window.isPlaying = true;
     this.updatePlayBtnUI();
 
     for (let i = 0; i < this.TIMES.length; i++) {
       if (!window.isPlaying) break;
 
+      // 현재 영상 재생
       this.syncVisual("user1", i);
       this.syncVisual("user2", i);
       this.updateDots(i);
 
-      // --- 수정된 대기 로직 (2초를 100ms씩 20번 나눠서 체크) ---
+      // [핵심] 현재 영상을 재생하자마자 '다음(i+1)' 영상을 미리 소환
+      const nextIdx = (i + 1) % this.TIMES.length;
+      this.preloadNext("user1", nextIdx);
+      this.preloadNext("user2", nextIdx);
+
       for (let j = 0; j < 20; j++) {
-        if (!window.isPlaying) break; // 중간에 일시정지 누르면 즉시 탈출
-        await new Promise((r) => setTimeout(r, 100)); // 0.1초 대기
+        if (!window.isPlaying) break;
+        await new Promise((r) => setTimeout(r, 100));
       }
-      // --------------------------------------------------
     }
-
     this.stopPlayback();
-
-    if (isMobileFS)
-      document.querySelector(".controller")?.classList.remove("is-hidden");
   },
 
   async runPlaybackLoop() {
@@ -158,61 +173,89 @@ const APP_CORE = {
   syncVisual(user, index) {
     const slot = this.state[user][index];
     const view = document.querySelector(`#${user}`);
-    if (!view || !slot) return;
-
     const back = view.querySelector(".Videos--users__back");
     const timeEl = view.querySelector(".Videos--users__middle h3");
     const textEl = view.querySelector(".Videos--users__middle p");
 
-    // 1. 시간 표시
+    // 1. 이전 영상 '즉시' 파괴 (좀비 방지)
+    const oldVideos = back.querySelectorAll("video");
+    oldVideos.forEach((v) => {
+      // 미리 불러오기(display: none) 중인 영상은 지우지 말아야 함!
+      if (v.style.display !== "none") {
+        v.pause();
+        v.src = "";
+        v.remove();
+      }
+    });
+
+    // 2. 텍스트 및 시간 즉시 업데이트 (0.9 오퍼시티 환경)
     timeEl.textContent = this.TIMES[index];
+    back.style.backgroundColor = "#000";
+    textEl.textContent = slot.text || (!slot.videoURL ? "💤" : "");
 
-    // 2. [수정] 요청하신 4가지 규칙 적용
-    if (!slot.videoURL && !slot.text) {
-      // 규칙 1: 영상 없고 텍스트 없으면 -> 💤
-      textEl.textContent = "💤";
-    } else if (slot.text) {
-      // 규칙 3, 4: 텍스트가 있으면 -> 무조건 텍스트 출력
-      textEl.textContent = slot.text;
-    } else {
-      // 규칙 2: 영상 있고 텍스트 없으면 -> 빈 텍스트
-      textEl.textContent = "";
-    }
-
-    // 3. 배경 처리 (기존의 깜빡임 방지 로직)
+    // 3. 영상 처리
     if (slot.videoURL) {
-      const nextVideo = document.createElement('video');
-      nextVideo.src = slot.videoURL;
-      nextVideo.muted = true;
-      nextVideo.autoplay = true;
-      nextVideo.loop = true;
-      nextVideo.playsInline = true;
+      // 이미 preloadNext에서 만들어둔 영상이 있는지 확인
+      let nextVideo = Array.from(back.querySelectorAll("video")).find(
+        (v) => v.src === slot.videoURL,
+      );
 
-      nextVideo.style.position = "absolute";
-      nextVideo.style.inset = "0";
-      nextVideo.style.width = "100%";
-      nextVideo.style.height = "100%";
-      nextVideo.style.objectFit = "cover";
-      nextVideo.style.zIndex = "10";
-
-      back.appendChild(nextVideo);
-      nextVideo.play().catch(() => {});
-
-      setTimeout(() => {
-        const allVideos = back.querySelectorAll('video');
-        allVideos.forEach(v => {
-          if (v !== nextVideo) {
-            v.pause();
-            v.remove();
-          }
+      if (nextVideo) {
+        // 미리 로드된 영상이 있다면 즉시 노출
+        Object.assign(nextVideo.style, {
+          display: "block",
+          position: "absolute",
+          inset: "0",
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: "0.9",
+          zIndex: "10",
         });
-      }, 150);
-    } else {
-      // 영상이 없으면 까만 배경
-      back.innerHTML = "";
-      back.style.backgroundColor = "#000";
+        nextVideo.play().catch(() => {});
+      } else {
+        // 없다면 새로 생성 (첫 실행 대비)
+        const newVideo = document.createElement("video");
+        newVideo.src = slot.videoURL;
+        newVideo.muted = true;
+        newVideo.autoplay = true;
+        newVideo.loop = true;
+        newVideo.playsInline = true;
+        Object.assign(newVideo.style, {
+          position: "absolute",
+          inset: "0",
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          opacity: "0.9",
+          zIndex: "10",
+        });
+        back.appendChild(newVideo);
+      }
     }
   },
+
+  // [수정] 차기 영상을 미리 로드하는 함수
+  preloadNext(user, nextIndex) {
+    const nextSlot = this.state[user][nextIndex];
+    if (!nextSlot || !nextSlot.videoURL) return;
+
+    // 이미 미리 불러온 영상이 있는지 확인 (중복 방지)
+    const back = document.querySelector(`#${user} .Videos--users__back`);
+    const isAlreadyLoaded = Array.from(back.querySelectorAll("video")).some(
+      (v) => v.src === nextSlot.videoURL,
+    );
+
+    if (!isAlreadyLoaded) {
+      const preVideo = document.createElement("video");
+      preVideo.src = nextSlot.videoURL;
+      preVideo.preload = "auto"; // 브라우저에게 미리 받으라고 명령
+      preVideo.muted = true;
+      preVideo.style.display = "none"; // 일단 숨김
+      back.appendChild(preVideo);
+    }
+  },
+
   updatePlayBtnUI() {
     const btn = document.querySelector("#playAll");
     if (!btn) return;
