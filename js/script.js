@@ -13,6 +13,7 @@ const TIMES = [
   "11:00",
 ];
 
+
 const state = {
   user1: [],
   user2: [],
@@ -83,13 +84,24 @@ function initSortable(user) {
 
   timeline._sortable = new Sortable(timeline, {
     animation: 150,
+
+    ghostClass: "sortable-ghost",
+    chosenClass: "sortable-chosen",
+    dragClass: "sortable-drag",
+
+    forceFallback: true,
+
     onEnd: (evt) => {
       const movedItem = state[user][evt.oldIndex];
 
       state[user].splice(evt.oldIndex, 1);
+
       state[user].splice(evt.newIndex, 0, movedItem);
 
-      renderTimeline(user);
+      timeline.querySelectorAll(".slot-text").forEach((textarea, i) => {
+        textarea.dataset.index = i;
+      });
+
       syncVisual(user, 0);
     },
   });
@@ -223,22 +235,118 @@ document.querySelector("#playAll").addEventListener("click", async () => {
   if (isPlaying) return;
 
   isPlaying = true;
+
   const button = document.querySelector("#playAll");
 
   button.textContent = "재생 중...";
 
+  const startTime = performance.now();
+
   for (let i = 0; i < 12; i++) {
     syncVisual("user1", i);
+
     syncVisual("user2", i);
 
     setProgress(i);
 
-    await new Promise((r) => setTimeout(r, 2000));
+    /* 정확히 2초 유지 */
+    const nextTime = startTime + (i + 1) * 2000;
+
+    const delay = nextTime - performance.now();
+
+    if (delay > 0) {
+      await new Promise((r) => setTimeout(r, delay));
+    }
   }
 
   button.textContent = "테스트 재생";
+
   isPlaying = false;
 });
+
+/* =========================
+   VIDEO 생성
+========================= */
+
+function createVideoElement(url) {
+  const video = document.createElement("video");
+
+  video.src = url;
+
+  video.muted = true;
+  video.autoplay = true;
+  video.loop = true;
+  video.playsInline = true;
+
+  video.preload = "auto";
+
+  return video;
+}
+
+/* =========================
+   VISUAL 동기화
+========================= */
+
+function syncVisual(user, index = 0) {
+  const slot = state[user][index];
+
+  if (!slot) return;
+
+  const back = document.querySelector(`#${user} .Videos--users__back`);
+
+  const timeEl = document.querySelector(`#${user} .Videos--users__middle h3`);
+
+  const textEl = document.querySelector(`#${user} .Videos--users__middle p`);
+
+  if (!back || !timeEl || !textEl) return;
+
+  /* =========================
+     VIDEO
+  ========================= */
+
+  if (slot.videoURL) {
+    let video = back.querySelector("video");
+
+    /* 처음만 생성 */
+    if (!video) {
+      video = createVideoElement(slot.videoURL);
+
+      back.appendChild(video);
+    }
+
+    /* src 변경 시만 교체 */
+    if (video.src !== slot.videoURL) {
+      video.src = slot.videoURL;
+
+      video.load();
+
+      video.addEventListener(
+        "loadeddata",
+        () => {
+          video.currentTime = 0;
+
+          video.play();
+        },
+        { once: true },
+      );
+    }
+  } else {
+    /* 영상 없으면 제거 */
+    back.innerHTML = "";
+
+    /* 검은 배경 유지 */
+    back.style.background = "black";
+  }
+
+  /* =========================
+     TEXT
+  ========================= */
+
+  timeEl.textContent = TIMES[index];
+
+  textEl.textContent = slot.text || "💤";
+}
+
 
 /* =========================
    초기 실행
