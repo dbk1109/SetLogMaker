@@ -62,13 +62,40 @@ const APP_CORE = {
   initSortable(user, el) {
     if (el._sortable) el._sortable.destroy();
     el._sortable = new Sortable(el, {
-      animation: 150,
+      animation: 200,
+      easing: "cubic-bezier(0.2, 1, 0.3, 1)",
       disabled: window.isSortLocked,
+      ghostClass: "sortable-ghost",
+      dragClass: "sortable-drag",
+      forceFallback: true,
+      fallbackOnBody: true,
+
       onEnd: (evt) => {
-        const items = this.state[user];
-        const [movedItem] = items.splice(evt.oldIndex, 1);
-        items.splice(evt.newIndex, 0, movedItem);
-        this.renderTimeline(user);
+        // 1. 실제 DOM에서 모든 아이템을 가져와서 ID 순서 추출
+        const allItems = Array.from(el.querySelectorAll(".Timeline--item"));
+        const newOrderIds = allItems.map((item) => item.dataset.id);
+
+        // 2. 데이터(state) 재정렬
+        this.state[user].sort((a, b) => {
+          return newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id);
+        });
+
+        // 3. [핵심] 시간 텍스트와 인덱스 데이터만 부분 업데이트 (전체 렌더링 X)
+        allItems.forEach((item, i) => {
+          // 비디오가 없는 경우 보여주는 시간 숫자(span) 업데이트
+          const thumbSpan = item.querySelector(".thumb span");
+          if (thumbSpan) {
+            thumbSpan.textContent = this.TIMES[i];
+          }
+
+          // textarea의 data-index 값도 현재 순서에 맞게 갱신 (나중에 텍스트 입력 시 필요)
+          const textarea = item.querySelector(".slot-text");
+          if (textarea) {
+            textarea.dataset.index = i;
+          }
+        });
+
+        // 4. 비주얼 영역 즉시 동기화
         this.syncVisual(user, 0);
       },
     });
@@ -137,11 +164,23 @@ const APP_CORE = {
     const timeEl = view.querySelector(".Videos--users__middle h3");
     const textEl = view.querySelector(".Videos--users__middle p");
 
+    // 1. 시간 표시
     timeEl.textContent = this.TIMES[index];
-    textEl.textContent = slot.text || "💤";
 
+    // 2. [수정] 요청하신 4가지 규칙 적용
+    if (!slot.videoURL && !slot.text) {
+      // 규칙 1: 영상 없고 텍스트 없으면 -> 💤
+      textEl.textContent = "💤";
+    } else if (slot.text) {
+      // 규칙 3, 4: 텍스트가 있으면 -> 무조건 텍스트 출력
+      textEl.textContent = slot.text;
+    } else {
+      // 규칙 2: 영상 있고 텍스트 없으면 -> 빈 텍스트
+      textEl.textContent = "";
+    }
+
+    // 3. 배경 처리 (기존의 깜빡임 방지 로직)
     if (slot.videoURL) {
-      // 1. 새 영상 생성
       const nextVideo = document.createElement('video');
       nextVideo.src = slot.videoURL;
       nextVideo.muted = true;
@@ -149,37 +188,31 @@ const APP_CORE = {
       nextVideo.loop = true;
       nextVideo.playsInline = true;
 
-      // 2. 스타일 설정 (기존 영상 위에 덮기)
       nextVideo.style.position = "absolute";
       nextVideo.style.inset = "0";
       nextVideo.style.width = "100%";
       nextVideo.style.height = "100%";
       nextVideo.style.objectFit = "cover";
-      nextVideo.style.zIndex = "10"; // 확실히 위에 오도록
+      nextVideo.style.zIndex = "10";
 
-      // 3. 일단 화면에 추가
       back.appendChild(nextVideo);
       nextVideo.play().catch(() => {});
 
-      // 4. [핵심] 아주 짧은 찰나(100ms) 뒤에 '나 자신'을 제외한 모든 형제 비디오 삭제
-      // 이렇게 하면 새 영상이 로딩되는 동안 기존 영상이 아래에 깔려있어 검은 화면을 막아줍니다.
       setTimeout(() => {
         const allVideos = back.querySelectorAll('video');
         allVideos.forEach(v => {
           if (v !== nextVideo) {
-            v.pause(); // 자원 점유 방지
-            v.remove(); // 삭제
+            v.pause();
+            v.remove();
           }
         });
-      }, 150); // 0.15초 뒤에 강제 청소
-
+      }, 150);
     } else {
-      // 영상이 없는 경우
+      // 영상이 없으면 까만 배경
       back.innerHTML = "";
       back.style.backgroundColor = "#000";
     }
   },
-
   updatePlayBtnUI() {
     const btn = document.querySelector("#playAll");
     if (!btn) return;
@@ -240,8 +273,15 @@ const APP_CORE = {
     document.addEventListener("input", (e) => {
       if (e.target.classList.contains("slot-text")) {
         const user = e.target.closest(".SettingUser").dataset.user;
-        this.state[user][e.target.dataset.index].text = e.target.value;
-        this.syncVisual(user, e.target.dataset.index);
+        const itemId = e.target.closest(".Timeline--item").dataset.id; // index 대신 ID 사용
+
+        const targetItem = this.state[user].find((item) => item.id === itemId);
+        if (targetItem) {
+          targetItem.text = e.target.value;
+          // 현재 재생 중인 인덱스를 찾아 비주얼 동기화
+          const currentIndex = this.state[user].indexOf(targetItem);
+          this.syncVisual(user, currentIndex);
+        }
       }
     });
 
@@ -250,7 +290,7 @@ const APP_CORE = {
       input.addEventListener("input", (e) => {
         const user = e.target.closest(".SettingUser").dataset.user;
         const nickname = e.target.value;
-        
+
         // 1. 비주얼 영역 닉네임 텍스트 변경
         const visualNickname = document.querySelector(`#${user} .nickname`);
         if (visualNickname) {
@@ -264,19 +304,23 @@ const APP_CORE = {
       input.addEventListener("change", (e) => {
         const user = e.target.closest(".SettingUser").dataset.user;
         const file = e.target.files[0];
-        
+
         if (file) {
           const imageURL = URL.createObjectURL(file);
-          
+
           // 1. 세팅 영역의 '+' 버튼 배경을 업로드한 이미지로 변경
-          const uploadLabel = e.target.closest(".SettingUser--profile").querySelector(".profile-upload");
+          const uploadLabel = e.target
+            .closest(".SettingUser--profile")
+            .querySelector(".profile-upload");
           if (uploadLabel) {
             uploadLabel.style.backgroundImage = `url(${imageURL})`;
             uploadLabel.textContent = ""; // '+' 글자 숨기기
           }
 
           // 2. 비주얼 영역의 프로필 이미지 변경
-          const visualImg = document.querySelector(`#${user} .Videos--users__profile img`);
+          const visualImg = document.querySelector(
+            `#${user} .Videos--users__profile img`,
+          );
           if (visualImg) {
             visualImg.src = imageURL;
           }

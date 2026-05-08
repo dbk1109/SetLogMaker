@@ -315,6 +315,7 @@ body section {
   height: 100%;
   -o-object-fit: cover;
      object-fit: cover;
+  opacity: 0.9;
   transition: opacity 0.15s linear;
 }
 .Videos--users__profile {
@@ -348,6 +349,7 @@ body section {
 .Videos--users__middle p {
   font-size: 14px;
   font-family: auto;
+  text-shadow: 0 0 20px #cfcfcf;
 }
 .Videos--users__rights {
   text-align: right;
