@@ -98,9 +98,7 @@ function initSortable(user) {
 
       state[user].splice(evt.newIndex, 0, movedItem);
 
-      timeline.querySelectorAll(".slot-text").forEach((textarea, i) => {
-        textarea.dataset.index = i;
-      });
+      renderTimeline(user);
 
       syncVisual(user, 0);
     },
@@ -346,6 +344,66 @@ function syncVisual(user, index = 0) {
 
   textEl.textContent = slot.text || "💤";
 }
+
+
+
+
+
+
+
+/* =========================
+   SORT LOCK
+========================= */
+
+let isSortLocked = false;
+
+const toggleSortBtn = document.querySelector("#toggleSort");
+
+function updateSortableState() {
+  ["user1", "user2"].forEach((user) => {
+    const timeline = document.querySelector(`#timeline-${user}`);
+
+    if (!timeline?._sortable) return;
+
+    timeline._sortable.option("disabled", isSortLocked);
+  });
+}
+
+function updateSortButtonUI() {
+  if (!toggleSortBtn) return;
+
+  if (isSortLocked) {
+    toggleSortBtn.classList.remove("is-unlocked");
+    toggleSortBtn.classList.add("is-locked");
+
+    toggleSortBtn.innerHTML = `
+      <i class="fa-solid fa-lock"></i>
+      <span>순서 이동 잠금됨</span>
+    `;
+  } else {
+    toggleSortBtn.classList.remove("is-locked");
+    toggleSortBtn.classList.add("is-unlocked");
+
+    toggleSortBtn.innerHTML = `
+      <i class="fa-solid fa-lock-open"></i>
+      <span>순서 이동 가능</span>
+    `;
+  }
+}
+
+if (toggleSortBtn) {
+  toggleSortBtn.addEventListener("click", () => {
+    isSortLocked = !isSortLocked;
+
+    updateSortableState();
+    updateSortButtonUI();
+  });
+}
+
+
+
+
+
 
 
 /* =========================

@@ -9,6 +9,8 @@
 </head>
 
 <body>
+  <p class="version">V1.0.0</p>
+
   <section id="setting">
     <div class="SettingWrap">
 
@@ -18,7 +20,7 @@
           <label for="profile-user1" class="profile-upload">+</label>
           <input type="file" id="profile-user1" class="profile-input" accept="image/*" hidden />
           <input type="text" class="nickname-input" placeholder="닉네임 입력" />
-          <label for="video-user1" class="btn btn-upload btn-blueviolet"> 동영상 업로드 </label>
+          <label for="video-user1" class="btn btn-upload btn__blueviolet"> 동영상 업로드 </label>
           <input type="file" id="video-user1" class="video-input" accept="video/*" multiple hidden />
         </div>
         <div class="Timeline" id="timeline-user1"></div>
@@ -30,7 +32,7 @@
           <label for="profile-user2" class="profile-upload">+</label>
           <input type="file" id="profile-user2" class="profile-input" accept="image/*" hidden />
           <input type="text" class="nickname-input" placeholder="닉네임 입력" />
-          <label for="video-user2" class="btn btn-upload btn-blueviolet"> 동영상 업로드 </label>
+          <label for="video-user2" class="btn btn-upload btn__blueviolet"> 동영상 업로드 </label>
           <input type="file" id="video-user2" class="video-input" accept="video/*" multiple hidden />
         </div>
         <div class="Timeline" id="timeline-user2"></div>
@@ -51,18 +53,11 @@
         </div>
 
         <div class="Menu--title__middle">
-          <input type="checkbox" id="menu-toggle" name="menu-toggle" >
           <label for="menu-toggle">
             <h1 id="menu-title">
               💚💜 <i class="fa-solid fa-angle-down"></i>
             </h1>
           </label>
-          <div id="menu-box">
-            <button id="fullscreenBtn" class="btn">
-              <i class="fa-solid fa-up-right-and-down-left-from-center"></i> 전체화면
-            </button>
-            <button id="playAll" class="btn btn-blueviolet"> 테스트 재생 </button>
-          </div>
         </div>
 
         <div class="Menu--title__right">
@@ -130,13 +125,29 @@
 
     </div>
 
-    <div class="Last"></div>
-
+    <div class="Last">
+    </div>
+    
   </section>
+  
+  <section class="controller">
+    <input type="checkbox" id="menu-toggle" name="menu-toggle">
+
+    <div id="menu-box">
+      <button id="fullscreenBtn" class="btn btn__darkcyan">
+        <i class="fa-solid fa-up-right-and-down-left-from-center"></i> 전체화면
+      </button>
+      <button id="playAll" class="btn btn__blueviolet">
+        <i class="fa-solid fa-play"></i> 재생
+      </button>
+
+      
+    </div>
+  </section>
+  
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  <!--<script src="./js/add.js"></script>-->
-  <!--<script src="./js/fullscreen.js"></script>-->
+  <script src="./js/fullscreen.js"></script>
   <script src="./js/script.js"></script>
 
 </body>

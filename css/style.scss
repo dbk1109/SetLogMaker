@@ -34,14 +34,12 @@ body {
   
   gap: 30px;
   padding: 30px;
-  box-sizing: border-box;
 
   background: #1F1C17;
 
   section {
     //height: 100%;
     //min-height: 820px;
-    box-sizing: border-box;
   }
 }
 
@@ -64,8 +62,6 @@ $visualWidth: 420px;
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
   padding-left: 10px;
   padding-right: 10px;
-  
-  box-sizing: border-box;
 
   border: 5px solid blueviolet;
   border-radius: 43px;
@@ -119,7 +115,7 @@ $visualWidth: 420px;
     position: relative;
     @include flex-set(space-between);
 
-    height: $size;
+    min-height: $size;
     padding: 0 6px;
 
     > div {
@@ -127,12 +123,11 @@ $visualWidth: 420px;
       > * {
         @include flex-set;
         height: $size;
-        box-sizing: border-box;
         background: var(--color-lightGrey);
         border-radius: 40px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
+        //overflow: hidden;
+        //white-space: nowrap;
+        //text-overflow: ellipsis;
       }
     }
 
@@ -149,29 +144,12 @@ $visualWidth: 420px;
       flex: 1;
       position: absolute;
       width: 100%;
-      #menu {
-        &-toggle {
-          display: none;
-          &:checked {
-            & ~ #menu-box {
-              display: block;
-              background-color: red;
-            }
-          }
-        }
-        &-title {
-          max-width: 160px;
-          padding: 20px;
-          gap: 4px;
-          font-size: 16px;
-          cursor: pointer;
-        }
-        &-box {
-          //display: none;
-          position: absolute;
-          bottom: 0;
-          
-        }
+      h1 {
+        max-width: 160px;
+        padding: 20px;
+        gap: 4px;
+        font-size: 16px;
+        cursor: pointer;
       }
     }
   }
@@ -324,9 +302,28 @@ $visualWidth: 420px;
   height: 35px;
 }
 
+.controller {
+  position: fixed;
+  right: 15px; bottom: 15px;
+}
+#menu {
+  &-toggle {
+    display: none;
+    &:checked {
+      & ~ #menu-box {
+        display: block;
+        background-color: yellow;
+      }
+    }
+  }
 
-
-
+  &-box {
+    //display: none;
+    //position: absolute;
+    //bottom: 0;
+    button {}
+  }
+}
 
 
 
@@ -388,19 +385,23 @@ $visualWidth: 420px;
 .Timeline--item {
   min-width: 0;
 
-  padding: 20px;
+  padding: 16px;
 
   background: white;
   border-radius: 10px;
-
-  box-sizing: border-box;
 }
 
-.thumb video {
-  width: 100%;
-  height: 100%;
-
-  object-fit: cover;
+.thumb {
+  -webkit-user-select: none;  /* Safari */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* IE/Edge */
+  user-select: none;  
+  video {
+    width: 100%;
+    height: 100%;
+  
+    object-fit: cover;
+  }
 }
 
 .sortable {
@@ -413,7 +414,6 @@ $visualWidth: 420px;
 /* =========================
    BUTTON
 ========================= */
-
 .btn {
   padding: 16px;
   border-radius: 10px;
@@ -425,9 +425,9 @@ $visualWidth: 420px;
   transition: .2s;
 
   @each $name, $color in $colors {
-    &-#{$name} {
+    &__#{$name} {
       background-color: $color;
-      color: white;
+      color: if(lightness($color) < 60%, #ffffff, #222222);
     }
   }
 
@@ -436,23 +436,6 @@ $visualWidth: 420px;
   }
 }
 
-#playAll,
-#exportVideo {
-  position: absolute;
-  right: 0;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#playAll {
-  top: 0px;
-}
-
-#exportVideo {
-  bottom: 50px;
-}
 /* =========================
    PROFILE UPLOAD
 ========================= */
