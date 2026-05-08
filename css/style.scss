@@ -6,6 +6,16 @@
   --line: 1px dashed blueviolet;  
 }
 
+/* =========================
+   COLORS
+========================= */
+$colors: (
+  "blueviolet": blueviolet,
+  "white": white,
+  "darkcyan": darkcyan,
+  "orange": orange
+);
+
 @mixin flex-set($justify: center, $align: center, $direction: row) {
   display: flex;
   justify-content: $justify;
@@ -31,6 +41,7 @@ body {
   section {
     //height: 100%;
     //min-height: 820px;
+    box-sizing: border-box;
   }
 }
 
@@ -69,6 +80,9 @@ $visualWidth: 420px;
    SETTING
 ========================= */
 
+.SettingWrap {
+  @include flex-set(center, center, column);
+}
 .SettingUser {
   width: 100%;
 
@@ -394,9 +408,9 @@ $visualWidth: 420px;
   transition: .2s;
 
   @each $name, $color in $colors {
-    &_#{$name} {
+    &-#{$name} {
       background-color: $color;
-      color: invert($color);
+      color: white;
     }
   }
 
@@ -532,7 +546,7 @@ $visualWidth: 420px;
 @media (max-width: 600px) {
   body {
     flex-direction: column !important;
-    padding: 16px !important;
+    padding: 0 !important;
     gap: 20px;
   }
 
@@ -544,6 +558,7 @@ $visualWidth: 420px;
 
   #setting {
     width: 100%;
+    padding: 16px !important;
   }
 
   .Timeline {

@@ -5,15 +5,6 @@ fullscreenBtn.addEventListener("click", async () => {
 
   if (!document.fullscreenElement) {
     await visual.requestFullscreen();
-
-    /* 모바일 가로 회전 시도 */
-    if (screen.orientation?.lock) {
-      try {
-        await screen.orientation.lock("landscape");
-      } catch (e) {
-        console.log("orientation lock fail");
-      }
-    }
   } else {
     await document.exitFullscreen();
   }

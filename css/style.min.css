@@ -77,14 +77,14 @@ button {
   cursor: pointer;
 }
 
-/* =========================
-   COLORS
-========================= */
 :root {
   --color-lightGrey: #F5F5F5;
   --line: 1px dashed blueviolet;
 }
 
+/* =========================
+   COLORS
+========================= */
 /* =========================
    LAYOUT
 ========================= */
@@ -99,6 +99,10 @@ body {
   box-sizing: border-box;
   background: #1F1C17;
 }
+body section {
+  box-sizing: border-box;
+}
+
 #setting {
   position: relative;
   flex: 1;
@@ -127,6 +131,13 @@ body {
 /* =========================
    SETTING
 ========================= */
+.SettingWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
 .SettingUser {
   width: 100%;
   display: flex;
@@ -364,21 +375,21 @@ body {
   font-weight: normal;
   transition: 0.2s;
 }
-.btn_blueviolet {
+.btn-blueviolet {
   background-color: blueviolet;
-  color: #75d41d;
+  color: white;
 }
-.btn_white {
+.btn-white {
   background-color: white;
-  color: black;
+  color: white;
 }
-.btn_darkcyan {
+.btn-darkcyan {
   background-color: darkcyan;
-  color: #ff7474;
+  color: white;
 }
-.btn_orange {
+.btn-orange {
   background-color: orange;
-  color: #005aff;
+  color: white;
 }
 .btn:hover {
   opacity: 0.8;
@@ -490,7 +501,7 @@ body {
 @media (max-width: 600px) {
   body {
     flex-direction: column !important;
-    padding: 16px !important;
+    padding: 0 !important;
     gap: 20px;
   }
   #visual {
@@ -500,6 +511,7 @@ body {
   }
   #setting {
     width: 100%;
+    padding: 16px !important;
   }
   .Timeline {
     grid-template-columns: repeat(2, 1fr) !important;
