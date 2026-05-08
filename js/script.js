@@ -1,397 +1,188 @@
-const TIMES = [
-  "4:00",
-  "5:00",
-  "6:00",
-  "7:00",
-  "8:00",
-  "9:00",
-  "10:00",
-  "11:00",
-  "12:00",
-  "1:00",
-  "2:00",
-  "3:00",
-];
-
-const state = {
-  user1: [],
-  user2: [],
-};
-
-window.isPlaying = false;
-
 /* =========================
-   슬롯 생성
+   CORE SCRIPT (script.js)
 ========================= */
 
-function createDefaultSlots(user) {
-  state[user] = TIMES.map(() => ({
-    id: crypto.randomUUID(),
-    text: "",
-    video: null,
-    videoURL: "",
-  }));
-}
+const APP_CORE = {
+  TIMES: [
+    "4:00",
+    "5:00",
+    "6:00",
+    "7:00",
+    "8:00",
+    "9:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "1:00",
+    "2:00",
+    "3:00",
+  ],
+  state: { user1: [], user2: [] },
 
-createDefaultSlots("user1");
-createDefaultSlots("user2");
+  init() {
+    window.isPlaying = false;
+    window.isSortLocked = window.innerWidth <= 768;
 
-/* =========================
-   타임라인 렌더
-========================= */
+    this.initData("user1");
+    this.initData("user2");
+    this.renderAll();
+    this.bindEvents();
+  },
 
-function renderTimeline(user) {
-  const timeline = document.querySelector(`#timeline-${user}`);
+  initData(user) {
+    this.state[user] = this.TIMES.map(() => ({
+      id: crypto.randomUUID(),
+      text: "",
+      videoURL: "",
+    }));
+  },
 
-  if (!timeline) return;
+  renderTimeline(user) {
+    const container = document.querySelector(`#timeline-${user}`);
+    if (!container) return;
 
-  timeline.innerHTML = "";
-
-  state[user].forEach((slot, index) => {
-    const item = document.createElement("div");
-
-    item.className = "Timeline--item";
-
-    item.dataset.id = slot.id;
-
-    item.innerHTML = `
-      <div class="thumb">
-        ${
-          slot.videoURL
-            ? `<video src="${slot.videoURL}" muted playsinline></video>`
-            : `<span>${TIMES[index]}</span>`
-        }
+    container.innerHTML = this.state[user]
+      .map(
+        (slot, i) => `
+      <div class="Timeline--item" data-id="${slot.id}">
+        <div class="thumb">
+          ${slot.videoURL ? `<video src="${slot.videoURL}" muted playsinline></video>` : `<span>${this.TIMES[i]}</span>`}
+        </div>
+        <textarea class="slot-text" data-index="${i}">${slot.text}</textarea>
       </div>
+    `,
+      )
+      .join("");
 
-      <textarea
-        class="slot-text"
-        data-index="${index}"
-      >${slot.text}</textarea>
-    `;
+    this.initSortable(user, container);
+  },
 
-    timeline.appendChild(item);
-  });
+  initSortable(user, el) {
+    if (el._sortable) el._sortable.destroy();
+    el._sortable = new Sortable(el, {
+      animation: 150,
+      disabled: window.isSortLocked,
+      onEnd: (evt) => {
+        const items = this.state[user];
+        const [movedItem] = items.splice(evt.oldIndex, 1);
+        items.splice(evt.newIndex, 0, movedItem);
+        this.renderTimeline(user);
+        this.syncVisual(user, 0);
+      },
+    });
+  },
 
-  initSortable(user);
-}
+  async startPlayback() {
+    if (window.isPlaying) return;
 
-/* =========================
-   SORTABLE
-========================= */
+    const isMobileFS = window.innerWidth <= 768 && !!document.fullscreenElement;
+    if (isMobileFS)
+      document.querySelector(".controller")?.classList.add("is-hidden");
 
-function initSortable(user) {
-  const timeline = document.querySelector(`#timeline-${user}`);
+    window.isPlaying = true;
+    this.updatePlayBtnUI();
 
-  if (!timeline) return;
+    for (let i = 0; i < this.TIMES.length; i++) {
+      if (!window.isPlaying) break;
 
-  timeline._sortable?.destroy();
+      this.syncVisual("user1", i);
+      this.syncVisual("user2", i);
+      this.updateDots(i);
 
-  timeline._sortable = new Sortable(timeline, {
-    animation: 150,
+      await new Promise((r) => setTimeout(r, 2000));
+    }
 
-    disabled: window.isSortLocked,
+    window.isPlaying = false;
+    this.updatePlayBtnUI();
+    if (isMobileFS)
+      document.querySelector(".controller")?.classList.remove("is-hidden");
+  },
 
-    ghostClass: "sortable-ghost",
-    chosenClass: "sortable-chosen",
-    dragClass: "sortable-drag",
+  syncVisual(user, index) {
+    const slot = this.state[user][index];
+    const view = document.querySelector(`#${user}`);
+    if (!view || !slot) return;
 
-    forceFallback: true,
+    const back = view.querySelector(".Videos--users__back");
+    const timeEl = view.querySelector(".Videos--users__middle h3");
+    const textEl = view.querySelector(".Videos--users__middle p");
 
-    onEnd: (evt) => {
-      const movedItem = state[user][evt.oldIndex];
+    timeEl.textContent = this.TIMES[index];
+    textEl.textContent = slot.text || "💤";
 
-      state[user].splice(evt.oldIndex, 1);
+    if (slot.videoURL) {
+      back.innerHTML = `<video src="${slot.videoURL}" muted autoplay loop playsinline></video>`;
+    } else {
+      back.innerHTML = "";
+      back.style.backgroundColor = "#000";
+    }
+  },
 
-      state[user].splice(evt.newIndex, 0, movedItem);
+  updatePlayBtnUI() {
+    const btn = document.querySelector("#playAll");
+    if (!btn) return;
+    btn.innerHTML = window.isPlaying
+      ? `<i class="fa-solid fa-pause"></i> <span>일시정지</span>`
+      : `<i class="fa-solid fa-play"></i> <span>전체 재생</span>`;
+  },
 
-      renderTimeline(user);
+  updateDots(index) {
+    document.querySelectorAll(".Menu--dots span").forEach((dot, i) => {
+      dot.classList.toggle("active", i === index);
+    });
+  },
 
-      syncVisual(user, 0);
-    },
-  });
-}
-
-/* =========================
-   업로드
-========================= */
-
-document.querySelectorAll(".SettingUser").forEach((setting) => {
-  const user = setting.dataset.user;
-
-  const videoInput = setting.querySelector(".video-input");
-
-  videoInput.addEventListener("change", (e) => {
-    const files = [...e.target.files].slice(0, 12);
-
-    files.forEach((file, index) => {
-      if (!state[user][index]) return;
-
-      if (state[user][index].videoURL) {
-        URL.revokeObjectURL(state[user][index].videoURL);
-      }
-
-      state[user][index].video = file;
-
-      state[user][index].videoURL = URL.createObjectURL(file);
+  bindEvents() {
+    // 정렬 잠금 토글
+    document.querySelector("#toggleSort")?.addEventListener("click", () => {
+      window.isSortLocked = !window.isSortLocked;
+      ["user1", "user2"].forEach((u) => {
+        const el = document.querySelector(`#timeline-${u}`);
+        if (el?._sortable) el._sortable.option("disabled", window.isSortLocked);
+      });
+      if (window.APP_UI) window.APP_UI.updateSortUI();
     });
 
-    renderTimeline(user);
-
-    syncVisual(user, 0);
-  });
-});
-
-/* =========================
-   텍스트 입력
-========================= */
-
-document.addEventListener("input", (e) => {
-  if (!e.target.classList.contains("slot-text")) return;
-
-  const user = e.target.closest(".SettingUser").dataset.user;
-
-  const index = Number(e.target.dataset.index);
-
-  state[user][index].text = e.target.value;
-
-  syncVisual(user, index);
-});
-
-/* =========================
-   프로필
-========================= */
-
-document.querySelectorAll(".SettingUser").forEach((setting) => {
-  const user = setting.dataset.user;
-
-  const profileInput = setting.querySelector(".profile-input");
-
-  const nicknameInput = setting.querySelector(".nickname-input");
-
-  profileInput.addEventListener("change", (e) => {
-    const file = e.target.files[0];
-
-    if (!file) return;
-
-    const url = URL.createObjectURL(file);
-
-    const img = document.querySelector(`#${user} .Videos--users__profile img`);
-
-    if (img) img.src = url;
-
-    const preview = setting.querySelector(".profile-upload");
-
-    preview.style.backgroundImage = `url(${url})`;
-
-    preview.textContent = "";
-  });
-
-  nicknameInput.addEventListener("input", (e) => {
-    const el = document.querySelector(`#${user} .nickname`);
-
-    if (el) {
-      el.textContent = e.target.value || user;
-    }
-  });
-});
-
-/* =========================
-   DOTS
-========================= */
-
-const dots = document.querySelectorAll(".Menu--dots span");
-
-function setProgress(index) {
-  dots.forEach((dot, i) => {
-    dot.classList.toggle("active", i === index);
-  });
-}
-
-/* =========================
-   VIDEO 생성
-========================= */
-
-function createVideoElement(url) {
-  const video = document.createElement("video");
-
-  video.src = url;
-
-  video.muted = true;
-  video.autoplay = true;
-  video.loop = true;
-  video.playsInline = true;
-
-  video.preload = "auto";
-
-  return video;
-}
-
-/* =========================
-   VISUAL 동기화
-========================= */
-
-function syncVisual(user, index = 0) {
-  const slot = state[user][index];
-
-  if (!slot) return;
-
-  const back = document.querySelector(`#${user} .Videos--users__back`);
-
-  const timeEl = document.querySelector(`#${user} .Videos--users__middle h3`);
-
-  const textEl = document.querySelector(`#${user} .Videos--users__middle p`);
-
-  if (!back || !timeEl || !textEl) return;
-
-  if (slot.videoURL) {
-    let video = back.querySelector("video");
-
-    if (!video) {
-      video = createVideoElement(slot.videoURL);
-
-      back.appendChild(video);
-    }
-
-    if (video.src !== slot.videoURL) {
-      video.src = slot.videoURL;
-
-      video.load();
-
-      video.addEventListener(
-        "loadeddata",
-        () => {
-          video.currentTime = 0;
-
-          video.play();
-        },
-        { once: true },
-      );
-    }
-  } else {
-    back.innerHTML = "";
-
-    back.style.background = "black";
-  }
-
-  timeEl.textContent = TIMES[index];
-
-  textEl.textContent = slot.text || "💤";
-}
-
-/* =========================
-   재생
-========================= */
-
-function updatePlayButtonUI() {
-  if (!playButton) return;
-
-  const icon = playButton.querySelector("i");
-  const text = playButton.querySelector("span");
-
-  playButton.classList.toggle("is-playing", window.isPlaying);
-  playButton.classList.toggle("is-idle", !window.isPlaying);
-
-  if (window.isPlaying) {
-    icon.className = "fa-solid fa-pause";
-    text.textContent = "일시정지";
-  } else {
-    icon.className = "fa-solid fa-play";
-    text.textContent = "전체 재생";
-  }
-}
-
-document.querySelector("#playAll").addEventListener("click", async () => {
-  if (window.isPlaying) return;
-
-  const isMobile = window.innerWidth <= 600;
-  const isFullscreen = !!document.fullscreenElement;
-
-  /* =========================
-     MOBILE NOTICE
-  ========================= */
-
-  if (isMobile && isFullscreen) {
-    const notice = document.querySelector("#playNotice");
-
-    notice?.classList.add("active");
-
-    return;
-  }
-
-  startPlayback();
-});
-
-async function startPlayback() {
-  if (window.isPlaying) return;
-
-  const isMobile = window.innerWidth <= 600;
-  const isFullscreen = !!document.fullscreenElement;
-
-  if (isMobile && isFullscreen) {
-    window.hideController?.();
-  }
-
-  window.isPlaying = true;
-
-  updatePlayButtonUI();
-
-
-  const startTime = performance.now();
-
-  for (let i = 0; i < TIMES.length; i++) {
-    if (!window.isPlaying) {
-      break;
-    }
-
-    syncVisual("user1", i);
-    syncVisual("user2", i);
-
-    setProgress(i);
-
-    const nextTime = startTime + (i + 1) * 2000;
-
-    const delay = nextTime - performance.now();
-
-    if (delay > 0) {
-      await new Promise((r) => setTimeout(r, delay));
-    }
-  }
-
-
-  window.isPlaying = false;
-
-  if (isMobile && isFullscreen) {
-    window.showController?.();
-  }
-}
-
-window.startPlayback = startPlayback;
-
-const playButton = document.querySelector("#playAll");
-
-
-/* =========================
-   SORTABLE 상태 갱신
-========================= */
-
-window.updateSortableState = function () {
-  ["user1", "user2"].forEach((user) => {
-    const timeline = document.querySelector(`#timeline-${user}`);
-
-    if (!timeline?._sortable) return;
-
-    timeline._sortable.option("disabled", window.isSortLocked);
-  });
+    // 재생 버튼
+    document.querySelector("#playAll")?.addEventListener("click", () => {
+      window.isPlaying ? (window.isPlaying = false) : this.startPlayback();
+    });
+
+    // 비디오 업로드 (이벤트 위임)
+    document.querySelectorAll(".SettingUser").forEach((setting) => {
+      const user = setting.dataset.user;
+      setting.querySelector(".video-input")?.addEventListener("change", (e) => {
+        const files = [...e.target.files].slice(0, 12);
+        // script.js 내 업로드 핸들러 예시 (이전 리팩토링안 보강)
+        files.forEach((file, i) => {
+          if (this.state[user][i]) {
+            // 12개 슬롯 범위를 넘지 않게
+            if (this.state[user][i].videoURL)
+              URL.revokeObjectURL(this.state[user][i].videoURL);
+            this.state[user][i].videoURL = URL.createObjectURL(file);
+          }
+        });
+        this.renderTimeline(user);
+        this.syncVisual(user, 0);
+      });
+    });
+
+    // 텍스트 입력 (이벤트 위임)
+    document.addEventListener("input", (e) => {
+      if (e.target.classList.contains("slot-text")) {
+        const user = e.target.closest(".SettingUser").dataset.user;
+        this.state[user][e.target.dataset.index].text = e.target.value;
+        this.syncVisual(user, e.target.dataset.index);
+      }
+    });
+  },
+
+  renderAll() {
+    this.renderTimeline("user1");
+    this.renderTimeline("user2");
+    this.syncVisual("user1", 0);
+    this.syncVisual("user2", 0);
+  },
 };
 
-/* =========================
-   초기 실행
-========================= */
-
-renderTimeline("user1");
-renderTimeline("user2");
-
-syncVisual("user1", 0);
-syncVisual("user2", 0);
-
-window.state = state;
+document.addEventListener("DOMContentLoaded", () => APP_CORE.init());
