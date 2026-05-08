@@ -1,10 +1,10 @@
 const fullscreenBtn = document.querySelector("#fullscreenBtn");
 
 fullscreenBtn.addEventListener("click", async () => {
-  const visual = document.querySelector("#visual");
+  const wrap = document.querySelector("#fullscreenWrap");
 
   if (!document.fullscreenElement) {
-    await visual.requestFullscreen();
+    await wrap.requestFullscreen();
   } else {
     await document.exitFullscreen();
   }

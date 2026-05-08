@@ -321,8 +321,72 @@ body {
 }
 #menu-toggle:checked ~ #menu-box {
   display: block;
-  background-color: yellow;
 }
+#menu-box {
+  display: none;
+}
+#fullscreenWrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  width: 100%;
+}
+
+/* fullscreen 상태 */
+#fullscreenWrap:fullscreen {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* fullscreen 안에서도 mobile width 유지 */
+#fullscreenWrap:fullscreen #visual {
+  width: 420px;
+  max-width: 100dvw;
+  height: 80dvh;
+  transform: scale(1.2);
+}
+
+/* =========================
+   CONTROLLER
+========================= */
+#controller {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 20px);
+  z-index: 9999;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  pointer-events: none;
+}
+
+.ControllerBtn {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.55);
+  backdrop-filter: blur(10px);
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  transition: 0.2s;
+}
+.ControllerBtn:hover {
+  opacity: 0.8;
+}
+.ControllerBtn.is-locked {
+  background: rgba(140, 20, 20, 0.75);
+}
+.ControllerBtn.is-unlocked {
+  background: rgba(90, 20, 160, 0.75);
+}
+
 /* =========================
    TIMELINE
 ========================= */

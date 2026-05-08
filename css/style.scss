@@ -312,17 +312,36 @@ $visualWidth: 420px;
     &:checked {
       & ~ #menu-box {
         display: block;
-        background-color: yellow;
       }
     }
   }
 
   &-box {
-    //display: none;
+    display: none;
     //position: absolute;
     //bottom: 0;
     button {}
   }
+}
+
+#fullscreenWrap {
+  @include flex-set;
+  width: 100%;
+}
+
+/* fullscreen 상태 */
+#fullscreenWrap:fullscreen {
+  width: 100vw;
+  height: 100vh;
+}
+
+/* fullscreen 안에서도 mobile width 유지 */
+#fullscreenWrap:fullscreen #visual {
+  width: 420px;
+  max-width: 100dvw;
+  height: 80dvh;
+
+  transform: scale(1.2);
 }
 
 
@@ -334,6 +353,55 @@ $visualWidth: 420px;
 
 
 
+/* =========================
+   CONTROLLER
+========================= */
+
+#controller {
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 20px);
+  z-index: 9999;
+
+  transform: translateX(-50%);
+
+  @include flex-set;
+  pointer-events: none;
+}
+
+.ControllerBtn {
+  pointer-events: auto;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 14px 18px;
+
+  border-radius: 999px;
+
+  background: rgba(20,20,20,.55);
+  backdrop-filter: blur(10px);
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  transition: .2s;
+
+  &:hover {
+    opacity: .8;
+  }
+
+  &.is-locked {
+    background: rgba(140,20,20,.75);
+  }
+
+  &.is-unlocked {
+    background: rgba(90,20,160,.75);
+  }
+}
 
 
 

@@ -44,107 +44,113 @@
     </div>
   </section>
 
-  <section id="visual">
+  <section id="fullscreenWrap">
+    <div id="visual">
 
-    <div class="Menu">
-      <div class="Menu--title">
-        <div class="Menu--title__left">
-          <i class="fa-solid fa-angle-left"></i>
+      <div class="Menu">
+        <div class="Menu--title">
+          <div class="Menu--title__left">
+            <i class="fa-solid fa-angle-left"></i>
+          </div>
+
+          <div class="Menu--title__middle">
+            <label for="menu-toggle">
+              <h1 id="menu-title">
+                💚💜 <i class="fa-solid fa-angle-down"></i>
+              </h1>
+            </label>
+          </div>
+
+          <div class="Menu--title__right">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            <i class="fa-solid fa-message"></i>
+          </div>
+
         </div>
 
-        <div class="Menu--title__middle">
-          <label for="menu-toggle">
-            <h1 id="menu-title">
-              💚💜 <i class="fa-solid fa-angle-down"></i>
-            </h1>
-          </label>
-        </div>
-
-        <div class="Menu--title__right">
-          <i class="fa-solid fa-arrow-up-from-bracket"></i>
-          <i class="fa-solid fa-message"></i>
-        </div>
-
-      </div>
-
-      <div class="Menu--dots">
-        <span class="active"></span>
-        <span></span>
-        <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-      </div>
-
-    </div>
-
-    <div class="Videos">
-
-      <div id="user1" class="Videos--users">
-
-        <div class="Videos--users__back"></div>
-
-        <div class="Videos--users__profile">
-          <img src="./" onerror="this.src='./image/profile.webp'" />
-
-          <p class="nickname">
-            user1
-          </p>
-        </div>
-
-        <div class="Videos--users__middle">
-          <h3>00:00</h3>
-          <p></p>
-        </div>
-
-        <div class="Videos--users__rights">
-          <i class="fa-solid fa-ellipsis"></i>
+        <div class="Menu--dots">
+          <span class="active"></span>
+          <span></span>
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
         </div>
 
       </div>
 
-      <div id="user2" class="Videos--users">
+      <div class="Videos">
 
-        <div class="Videos--users__back"></div>
+        <div id="user1" class="Videos--users">
 
-        <div class="Videos--users__profile">
-          <img src="./" onerror="this.src='./image/profile.webp'" />
+          <div class="Videos--users__back"></div>
 
-          <p class="nickname">
-            user2
-          </p>
+          <div class="Videos--users__profile">
+            <img src="./" onerror="this.src='./image/profile.webp'" />
+
+            <p class="nickname">
+              user1
+            </p>
+          </div>
+
+          <div class="Videos--users__middle">
+            <h3>00:00</h3>
+            <p></p>
+          </div>
+
+          <div class="Videos--users__rights">
+            <i class="fa-solid fa-ellipsis"></i>
+          </div>
+
         </div>
 
-        <div class="Videos--users__middle">
-          <h3>00:00</h3>
-          <p>씻을 힘이 없어서 누워있음</p>
-        </div>
+        <div id="user2" class="Videos--users">
 
-        <div class="Videos--users__rights">
-          <i class="fa-regular fa-heart"></i>
+          <div class="Videos--users__back"></div>
+
+          <div class="Videos--users__profile">
+            <img src="./" onerror="this.src='./image/profile.webp'" />
+
+            <p class="nickname">
+              user2
+            </p>
+          </div>
+
+          <div class="Videos--users__middle">
+            <h3>00:00</h3>
+            <p>씻을 힘이 없어서 누워있음</p>
+          </div>
+
+          <div class="Videos--users__rights">
+            <i class="fa-regular fa-heart"></i>
+          </div>
+
         </div>
 
       </div>
 
-    </div>
-
-    <div class="Last">
-    </div>
-    
-  </section>
-  
-  <section class="controller">
-    <input type="checkbox" id="menu-toggle" name="menu-toggle">
-
-    <div id="menu-box">
-      <button id="fullscreenBtn" class="btn btn__darkcyan">
-        <i class="fa-solid fa-up-right-and-down-left-from-center"></i> 전체화면
-      </button>
-      <button id="playAll" class="btn btn__blueviolet">
-        <i class="fa-solid fa-play"></i> 재생
-      </button>
-
+      <div class="Last">
+      </div>
       
     </div>
-  </section>
+    
+    <div class="controller">
+      <input type="checkbox" id="menu-toggle" name="menu-toggle">
+
+      <div id="menu-box">
+        <button id="fullscreenBtn" class="btn btn__darkcyan">
+          <i class="fa-solid fa-up-right-and-down-left-from-center"></i> 전체화면
+        </button>
+        <button id="playAll" class="btn btn__blueviolet">
+          <i class="fa-solid fa-play"></i> 재생
+        </button>
+
+        <button id="toggleSort" class="ControllerBtn is-unlocked">
+          <i class="fa-solid fa-lock-open"></i>
+          <span>순서 이동 가능</span>
+        </button>
+      </div>
+    </div>
   
+  </section>
+
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="./js/fullscreen.js"></script>
