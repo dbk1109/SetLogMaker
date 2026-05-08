@@ -165,7 +165,7 @@ document.querySelectorAll(".SettingUser").forEach((setting) => {
 });
 
 
-const dots = document.querySelectorAll(".Area--dots span");
+const dots = document.querySelectorAll(".Menu--dots span");
 
 function setProgress(index) {
   dots.forEach((dot, i) => {

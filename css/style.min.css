@@ -1,12 +1,11 @@
 @charset "UTF-8";
 @import url("https://fonts.googleapis.com/css?family=Black+Han+Sans:400");
 * {
-  font-family: "GMarketSans";
+  font-family: "Escoredream";
 }
 
-:root {
-  --lightGrey: #F5F5F5;
-  --line: 1px dashed blueviolet;
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Black Han Sans", sans-serif;
 }
 
 /* =========================
@@ -28,6 +27,24 @@
   font-family: "GMarketSans";
   src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff") format("woff");
   font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff") format("woff");
+  font-weight: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-6Bold.woff") format("woff");
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Escoredream";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-8Heavy.woff") format("woff");
+  font-weight: 800;
   font-display: swap;
 }
 /* =========================
@@ -61,23 +78,27 @@ button {
 }
 
 /* =========================
+   COLORS
+========================= */
+:root {
+  --color-lightGrey: #F5F5F5;
+  --line: 1px dashed blueviolet;
+}
+
+/* =========================
    LAYOUT
 ========================= */
 body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 50px;
+  flex-direction: row;
   position: relative;
-  padding: 50px;
+  gap: 30px;
+  padding: 30px;
   box-sizing: border-box;
   background: #1F1C17;
 }
-body section {
-  height: 100%;
-  min-height: 820px;
-}
-
 #setting {
   position: relative;
   flex: 1;
@@ -86,11 +107,16 @@ body section {
 
 #visual {
   flex-shrink: 0;
-  width: 420px;
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
-  padding: 24px 10px;
+  align-items: stretch;
+  flex-direction: column;
+  width: 420px;
+  height: 96dvh;
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-left: 10px;
+  padding-right: 10px;
   box-sizing: border-box;
   border: 5px solid blueviolet;
   border-radius: 43px;
@@ -99,58 +125,89 @@ body section {
 }
 
 /* =========================
+   SETTING
+========================= */
+.SettingUser {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.SettingUser > h2 {
+  width: 100%;
+}
+.SettingUser--profile {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+/* =========================
    TOP AREA
 ========================= */
-.Area {
+.Menu {
   display: flex;
   flex-direction: column;
 }
-.Area--title {
+.Menu--title {
   position: relative;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
   height: 42px;
   padding: 0 6px;
 }
-.Area--title > div {
+.Menu--title > div {
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: row;
 }
-.Area--title > div > * {
+.Menu--title > div > * {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
   height: 42px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   box-sizing: border-box;
+  background: var(--color-lightGrey);
+  border-radius: 40px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-.Area--title__left, .Area--title__right {
+.Menu--title__left, .Menu--title__right {
   gap: 14px;
 }
-.Area--title__left i, .Area--title__right i {
+.Menu--title__left i, .Menu--title__right i {
   width: 42px;
-  background: var(--lightGrey);
-  border-radius: 40px;
 }
-.Area--title__middle {
+.Menu--title__middle {
   position: absolute;
   width: 100%;
 }
-.Area--title__middle h1 {
+.Menu--title__middle #menu-toggle {
+  display: none;
+}
+.Menu--title__middle #menu-toggle:checked ~ #menu-box {
+  display: block;
+  background-color: red;
+}
+.Menu--title__middle #menu-title {
   max-width: 160px;
   padding: 20px;
-  display: flex;
-  align-items: center;
   gap: 4px;
   font-size: 16px;
-  text-align: left;
-  background: var(--lightGrey);
-  border-radius: 40px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  cursor: pointer;
 }
-.Area--dots {
+.Menu--title__middle #menu-box {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  width: 10%;
+}
+.Menu--dots {
   width: 100%;
   height: 10px;
   margin: 14px 0;
@@ -159,14 +216,14 @@ body section {
   align-items: center;
   gap: 6px;
 }
-.Area--dots span {
+.Menu--dots span {
   display: block;
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: #D7D7D5;
 }
-.Area--dots span.active {
+.Menu--dots span.active {
   background: #1F1C17;
   border: 1px solid white;
   outline: 2px solid #D7D7D5;
@@ -237,7 +294,6 @@ body section {
   text-align: center;
 }
 .Videos--users__middle h3 {
-  font-family: "Black Han Sans", sans-serif;
   font-size: 30px;
 }
 .Videos--users__middle p {
@@ -250,24 +306,6 @@ body section {
 
 .Last {
   height: 35px;
-}
-
-/* =========================
-   SETTING
-========================= */
-.SettingUser {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.SettingUser > h2 {
-  width: 100%;
-}
-.SettingUser--profile {
-  width: 100%;
-  display: flex;
-  gap: 10px;
 }
 
 /* =========================
@@ -320,12 +358,27 @@ body section {
 ========================= */
 .btn {
   padding: 16px;
-  background: blueviolet;
-  color: white;
   border-radius: 10px;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
+  font-weight: normal;
   transition: 0.2s;
+}
+.btn_blueviolet {
+  background-color: blueviolet;
+  color: #75d41d;
+}
+.btn_white {
+  background-color: white;
+  color: black;
+}
+.btn_darkcyan {
+  background-color: darkcyan;
+  color: #ff7474;
+}
+.btn_orange {
+  background-color: orange;
+  color: #005aff;
 }
 .btn:hover {
   opacity: 0.8;
@@ -358,7 +411,7 @@ body section {
   align-items: center;
   overflow: hidden;
   border-radius: 50%;
-  background: var(--lightGrey);
+  background: var(--color-lightGrey);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

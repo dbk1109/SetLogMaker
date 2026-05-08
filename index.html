@@ -1,73 +1,42 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" viewport-fit="cover"/>
   <title>SETLOG STYLE MAKER</title>
-
   <link rel="stylesheet" href="./css/style.min.css" />
-
   <script src="https://kit.fontawesome.com/02bd83a24e.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
-
   <section id="setting">
     <div class="SettingWrap">
 
       <div class="SettingUser" data-user="user1">
-
         <h2>USER 1</h2>
-
         <div class="SettingUser--profile">
-
           <label for="profile-user1" class="profile-upload">+</label>
-
           <input type="file" id="profile-user1" class="profile-input" accept="image/*" hidden />
-
           <input type="text" class="nickname-input" placeholder="닉네임 입력" />
-
-          <label for="video-user1" class="btn btn-upload">
-            동영상 업로드
-          </label>
-
+          <label for="video-user1" class="btn btn-upload"> 동영상 업로드 </label>
           <input type="file" id="video-user1" class="video-input" accept="video/*" multiple hidden />
-
         </div>
-
         <div class="Timeline" id="timeline-user1"></div>
-
       </div>
 
       <div class="SettingUser" data-user="user2">
-
         <h2>USER 2</h2>
-
         <div class="SettingUser--profile">
-
           <label for="profile-user2" class="profile-upload">+</label>
-
           <input type="file" id="profile-user2" class="profile-input" accept="image/*" hidden />
-
           <input type="text" class="nickname-input" placeholder="닉네임 입력" />
-
-          <label for="video-user2" class="btn btn-upload">
-            동영상 업로드
-          </label>
-
+          <label for="video-user2" class="btn btn-upload"> 동영상 업로드 </label>
           <input type="file" id="video-user2" class="video-input" accept="video/*" multiple hidden />
-
         </div>
-
         <div class="Timeline" id="timeline-user2"></div>
-
       </div>
 
-      <button id="playAll" class="btn">
-        테스트 재생
-      </button>
+      <button id="playAll" class="btn"> 테스트 재생 </button>
 
       <!--<button id="openPreview" class="btn">
         새창열기
@@ -78,29 +47,34 @@
 
   <section id="visual">
 
-    <div class="Area">
-
-      <div class="Area--title">
-
-        <div class="Area--title__left">
+    <div class="Menu">
+      <div class="Menu--title">
+        <div class="Menu--title__left">
           <i class="fa-solid fa-angle-left"></i>
         </div>
 
-        <div class="Area--title__middle">
-          <h1 id="main-title">
-            💚💜
-            <i class="fa-solid fa-angle-down"></i>
-          </h1>
+        <div class="Menu--title__middle">
+          <input type="checkbox" id="menu-toggle" name="menu-toggle" >
+          <label for="menu-toggle">
+            <h1 id="menu-title">
+              💚💜 <i class="fa-solid fa-angle-down"></i>
+            </h1>
+          </label>
+          <div id="menu-box">
+            <button id="fullscreenBtn" class="btn">
+              전체화면
+            </button>
+          </div>
         </div>
 
-        <div class="Area--title__right">
+        <div class="Menu--title__right">
           <i class="fa-solid fa-arrow-up-from-bracket"></i>
           <i class="fa-solid fa-message"></i>
         </div>
 
       </div>
 
-      <div class="Area--dots">
+      <div class="Menu--dots">
         <span class="active"></span>
         <span></span>
         <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
@@ -163,9 +137,8 @@
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-
-
   <script src="./js/add.js"></script>
+  <script src="./js/fullscreen.js"></script>
   <script src="./js/script.js"></script>
 
 </body>
