@@ -63,6 +63,16 @@ body {
   min-width: 0;
 
   height: auto;
+
+  .TITLE {
+    h1 {
+      color: white;
+      margin: 20px 0 40px;
+      text-align: center;
+      font-size: 1.5rem;
+      overflow: hidden;
+    }
+  }
 }
 
 #fullscreenWrap {
@@ -95,7 +105,7 @@ body {
   @include flex-set(space-between, stretch, column);
 
   width: 100%;
-  height: 96dvh;
+  height: 93dvh;
 
   padding-top: calc(24px + env(safe-area-inset-top));
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
@@ -316,7 +326,7 @@ body {
 
       p {
         font-size: 16px;
-        font-weight: 600;
+        font-weight: 400;
 
         font-family: auto;
       }
@@ -627,10 +637,18 @@ body {
 
     text-align: center;
 
+    i {
+      color: #00fff3;
+      font-size: 2rem;
+      margin: 10px 0 20px;
+    }
     p {
       line-height: 1.6;
       font-size: 18px;
       word-break: auto-phrase;
+      &:nth-child(2) {
+        margin-bottom: 20px;
+      }
     }
 
     button {
