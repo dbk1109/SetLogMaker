@@ -420,19 +420,6 @@ body section {
   grid-template-columns: repeat(6, 1fr);
   gap: 20px;
 }
-.Timeline.can-drag .Timeline--item {
-  cursor: grab;
-}
-.Timeline.can-drag .Timeline--item .slot-text {
-  cursor: grab;
-  pointer-events: none;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  user-select: none;
-}
-.Timeline.can-drag .Timeline--item:active {
-  cursor: grabbing;
-}
 .Timeline--item {
   min-width: 0;
   padding: 16px;

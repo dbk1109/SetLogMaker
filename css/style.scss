@@ -392,19 +392,19 @@ body {
 
   gap: 20px;
 
-  &.can-drag .Timeline--item {
-    cursor: grab;
-    .slot-text {
-      cursor: grab;
-      pointer-events: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      user-select: none;
-    }
-    &:active {
-      cursor: grabbing;
-    }
-  }
+  //&.can-drag .Timeline--item {
+  //  cursor: grab;
+  //  .slot-text {
+  //    cursor: grab;
+  //    pointer-events: none;
+  //    -webkit-user-select: none;
+  //    -moz-user-select: none;
+  //    user-select: none;
+  //  }
+  //  &:active {
+  //    cursor: grabbing;
+  //  }
+  //}
 
   &--item {
     min-width: 0;
