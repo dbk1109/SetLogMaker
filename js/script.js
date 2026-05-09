@@ -62,7 +62,7 @@ const APP_CORE = {
               : `<span>${this.TIMES[i]}</span>`
           }
         </div>
-        <textarea class="slot-text" data-index="${i}" placeholder="${this.TIMES[i]} 코멘트">${slot.text}</textarea>
+        <textarea class="slot-text" data-index="${i}" placeholder="text (비워도됨)">${slot.text}</textarea>
       </div>
     `,
       )
@@ -128,29 +128,42 @@ const APP_CORE = {
 
   async startPlayback() {
     if (window.isPlaying) return;
+
+    const playableIndexes = this.getPlayableIndexes();
+
+    // 재생할 게 없으면 종료
+    if (!playableIndexes.length) {
+      alert("재생할 콘텐츠가 없습니다.");
+      return;
+    }
+
     window.isPlaying = true;
     this.updatePlayBtnUI();
 
-    for (let i = 0; i < this.TIMES.length; i++) {
+    for (let step = 0; step < playableIndexes.length; step++) {
       if (!window.isPlaying) break;
 
-      // 위아래 동기화를 위해 프레임 단위로 실행
+      const i = playableIndexes[step];
+
       requestAnimationFrame(() => {
         this.syncVisual("user1", i);
         this.syncVisual("user2", i);
         this.updateDots(i);
       });
 
-      // 현재 재생 중일 때 다음 영상을 미리 로딩 (틈 최소화)
-      const nextIdx = (i + 1) % this.TIMES.length;
-      this.preloadNext("user1", nextIdx);
-      this.preloadNext("user2", nextIdx);
+      // 다음 재생 예정 index
+      const nextPlayable =
+        playableIndexes[(step + 1) % playableIndexes.length];
+
+      this.preloadNext("user1", nextPlayable);
+      this.preloadNext("user2", nextPlayable);
 
       for (let j = 0; j < 20; j++) {
         if (!window.isPlaying) break;
         await new Promise((r) => setTimeout(r, 100));
       }
     }
+
     this.stopPlayback();
   },
 
@@ -237,18 +250,40 @@ const APP_CORE = {
     });
   },
 
+  hasContent(slot) {
+    return !!(slot.videoURL || (slot.text && slot.text.trim() !== ""));
+  },
+
+  getPlayableIndexes() {
+    const result = [];
+
+    for (let i = 0; i < this.TIMES.length; i++) {
+      const user1Slot = this.state.user1[i];
+      const user2Slot = this.state.user2[i];
+
+      const hasUser1 = this.hasContent(user1Slot);
+      const hasUser2 = this.hasContent(user2Slot);
+
+      // 둘 중 하나라도 콘텐츠 있으면 재생
+      if (hasUser1 || hasUser2) {
+        result.push(i);
+      }
+    }
+
+    return result;
+  },
+
   bindEvents() {
     document.querySelector("#toggleSort")?.addEventListener("click", (e) => {
       e.stopPropagation();
       window.isSortLocked = !window.isSortLocked;
-      
+
       if (window.APP_UI) window.APP_UI.updateSortUI();
 
       ["user1", "user2"].forEach((u) => {
         const el = document.querySelector(`#timeline-${u}`);
         if (el?._sortable) el._sortable.option("disabled", window.isSortLocked);
       });
-
     });
 
     document.querySelectorAll(".SettingUser").forEach((setting) => {
