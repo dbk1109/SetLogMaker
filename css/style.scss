@@ -417,6 +417,10 @@ body {
     //@include flex-set(space-between, center);
     width: 100%;
     position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
 }
 
@@ -515,6 +519,10 @@ body {
   border-bottom: 2px solid #e5e5e5;
   background: unset;
   touch-action: pan-y;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .sortable {

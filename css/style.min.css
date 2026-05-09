@@ -445,6 +445,9 @@ body section {
 .Timeline--header {
   width: 100%;
   position: relative;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 
 /* =========================
@@ -514,6 +517,9 @@ body section {
   border-bottom: 2px solid #e5e5e5;
   background: unset;
   touch-action: pan-y;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 
 .sortable-ghost {
