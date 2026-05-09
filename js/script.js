@@ -49,7 +49,7 @@ const APP_CORE = {
         <div class="thumb">
           ${slot.videoURL ? `<video src="${slot.videoURL}" muted playsinline></video>` : `<span>${this.TIMES[i]}</span>`}
         </div>
-        <textarea class="slot-text" data-index="${i}">${slot.text}</textarea>
+        <textarea class="slot-text" data-index="${i}" placeholder="${this.TIMES[i]} 코멘트">${slot.text}</textarea>
       </div>
     `,
       )
