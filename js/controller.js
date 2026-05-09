@@ -99,6 +99,15 @@ const APP_UI = {
     `;
   },
 
+  updateDraggableUI() {
+    ["user1", "user2"].forEach((u) => {
+      const el = document.querySelector(`#timeline-${u}`);
+      if (el) {
+        el.classList.toggle("can-drag", !window.isSortLocked);
+      }
+    });
+  },
+
   toggleFullscreen() {
     const el = this.fullscreenWrap;
 
@@ -115,7 +124,7 @@ const APP_UI = {
     if (this.fullscreenBtn) {
       this.fullscreenBtn.innerHTML = isFS
         ? `<i class="fa-solid fa-compress"></i> <span>닫기</span>`
-        : `<i class="fa-solid fa-expand"></i> <span>전체화면</span>`;
+        : `<i class="fa-solid fa-expand"></i> <span>녹화준비</span>`;
     }
 
     if (!isFS && window.isPlaying) {
@@ -128,8 +137,14 @@ const APP_UI = {
     }
   },
 
+  syncSortState() {
+    this.updateSortUI(); // 버튼 텍스트/아이콘 변경
+    this.updateDraggableUI(); // 타임라인 클래스 변경
+  },
+
   bindPlayNotice() {
     console.log("🔍 STEP 1: bindPlayNotice 함수 진입");
+
     if (!this.playNotice || !this.playNoticeConfirm) {
       console.error("❌ 에러: playNotice 또는 Confirm 버튼을 찾을 수 없음");
       return;
@@ -147,6 +162,7 @@ const APP_UI = {
 
     playBtn?.addEventListener("click", (e) => {
       console.log("🔍 STEP 3: 재생 버튼 클릭 이벤트 발생!");
+
       e.preventDefault();
       e.stopPropagation();
 

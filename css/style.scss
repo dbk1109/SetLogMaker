@@ -6,6 +6,8 @@
 
 :root {
   --color-lightGrey: #f5f5f5;
+  --color-black: #1C1C1E;
+  --color-fontGrey: #A7A7A7;
   --line: 1px dashed blueviolet;
 }
 
@@ -388,19 +390,51 @@ body {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
 
-  gap: 10px;
+  gap: 20px;
+
+  &.can-drag .Timeline--item {
+    cursor: grab;
+    .slot-text {
+      cursor: grab;
+      pointer-events: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+    }
+    &:active {
+      cursor: grabbing;
+    }
+  }
 
   &--item {
     min-width: 0;
-
     padding: 16px;
-
     border-radius: 10px;
-
-    background: white;
+    background: var(--color-lightGrey);
+    position: relative;
+    &:not(:last-child)::after {
+      content: "→";
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--color-lightGrey);
+      position: absolute;
+      z-index: -1;
+      top: 50%;
+      transform: translateY(-50%);
+      right: -15px;
+    }
   }
 }
+/* 기본적으로 숨김 */
+.Timeline--item .drag-handle {
+  display: none;
+}
 
+/* 드래그 가능 상태일 때만 노출 */
+.Timeline--container.can-drag .drag-handle {
+  display: block;
+  color: #888;
+}
 .thumb {
   user-select: none;
 
@@ -463,19 +497,18 @@ body {
 
   width: 4rem;
   height: 4rem;
-
   aspect-ratio: 1 / 1;
 
   overflow: hidden;
-
   border-radius: 50%;
 
   background:
     var(--color-lightGrey)
     center center / cover no-repeat;
 
-  font-size: 26px;
+  font-size: 12px;
   font-weight: 300;
+  text-align: center;
 
   cursor: pointer;
 
@@ -499,10 +532,9 @@ body {
 .slot-text {
   width: 100%;
   min-height: 10px;
-
   margin-top: 5px;
-
   border-bottom: 2px solid #e5e5e5;
+  background: unset;
 }
 
 /* =========================
@@ -665,7 +697,6 @@ body {
     background: rgba(183, 43, 226, 0.8); // 해제 시 보라색 계열
   }
 }
-
 
 /* =========================
    RESPONSIVE

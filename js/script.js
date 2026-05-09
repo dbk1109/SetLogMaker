@@ -40,7 +40,6 @@ const APP_CORE = {
 
   renderTimeline(user) {
     const container = document.querySelector(`#timeline-${user}`);
-    if (!container) return;
 
     container.innerHTML = this.state[user]
       .map(
@@ -228,11 +227,14 @@ const APP_CORE = {
     document.querySelector("#toggleSort")?.addEventListener("click", (e) => {
       e.stopPropagation();
       window.isSortLocked = !window.isSortLocked;
+      
+      if (window.APP_UI) window.APP_UI.updateSortUI();
+
       ["user1", "user2"].forEach((u) => {
         const el = document.querySelector(`#timeline-${u}`);
         if (el?._sortable) el._sortable.option("disabled", window.isSortLocked);
       });
-      if (window.APP_UI) window.APP_UI.updateSortUI();
+      
     });
 
     document.querySelectorAll(".SettingUser").forEach((setting) => {
@@ -301,6 +303,7 @@ const APP_CORE = {
     this.syncVisual("user1", 0);
     this.syncVisual("user2", 0);
     this.updatePlayBtnUI();
+    if (window.APP_UI) window.APP_UI.updateDraggableUI();
     if (window.APP_UI) window.APP_UI.updateSortUI();
   },
 };
