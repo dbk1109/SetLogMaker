@@ -100,12 +100,7 @@ const APP_UI = {
   },
 
   updateDraggableUI() {
-    ["user1", "user2"].forEach((u) => {
-      const el = document.querySelector(`#timeline-${u}`);
-      if (el) {
-        el.classList.toggle("can-drag", !window.isSortLocked);
-      }
-    });
+    document.body.classList.toggle("sort-unlocked", !window.isSortLocked);
   },
 
   toggleFullscreen() {

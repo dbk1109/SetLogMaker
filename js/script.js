@@ -45,24 +45,25 @@ const APP_CORE = {
       .map(
         (slot, i) => `
       <div class="Timeline--item" data-id="${slot.id}">
-        <div class="thumb">
-          ${
-            slot.videoURL
-              ? `
-                <video src="${slot.videoURL}" muted playsinline></video>
-
-                <button 
-                  class="delete-video-btn"
-                  data-user="${user}"
-                  data-id="${slot.id}"
-                >
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              `
-              : `<span>${this.TIMES[i]}</span>`
-          }
+        <div class="Timeline--header">
+          <span class="time-label">${this.TIMES[i]}</span>
         </div>
-        <textarea class="slot-text" data-index="${i}" placeholder="text (비워도됨)">${slot.text}</textarea>
+        ${
+          slot.videoURL
+            ? `
+            <div class="thumb">
+              <video src="${slot.videoURL}" muted playsinline></video>
+              <button class="delete-video-btn" data-user="${user}" data-id="${slot.id}">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            `
+            : `
+            <div class="thumb empty">
+              <video src="${slot.videoURL}" muted playsinline></video>
+            `
+        }
+        </div>
+        <textarea class="slot-text" data-index="${i}" placeholder="텍스트">${slot.text}</textarea>
       </div>
     `,
       )
@@ -81,6 +82,11 @@ const APP_CORE = {
       dragClass: "sortable-drag",
       forceFallback: true,
       fallbackOnBody: true,
+      //handle: ".drag-handle",
+
+      onStart: () => {
+        document.body.classList.add("is-sorting");
+      },
 
       onEnd: (evt) => {
         const allItems = Array.from(el.querySelectorAll(".Timeline--item"));
@@ -98,6 +104,7 @@ const APP_CORE = {
         });
 
         this.syncVisual(user, 0);
+        document.body.classList.remove("is-sorting");
       },
     });
   },
@@ -276,13 +283,20 @@ const APP_CORE = {
   bindEvents() {
     document.querySelector("#toggleSort")?.addEventListener("click", (e) => {
       e.stopPropagation();
+
       window.isSortLocked = !window.isSortLocked;
 
-      if (window.APP_UI) window.APP_UI.updateSortUI();
+      if (window.APP_UI) {
+        window.APP_UI.updateSortUI();
+        window.APP_UI.updateDraggableUI();
+      }
 
       ["user1", "user2"].forEach((u) => {
         const el = document.querySelector(`#timeline-${u}`);
-        if (el?._sortable) el._sortable.option("disabled", window.isSortLocked);
+
+        if (el?._sortable) {
+          el._sortable.option("disabled", window.isSortLocked);
+        }
       });
     });
 
@@ -386,8 +400,10 @@ const APP_CORE = {
     this.syncVisual("user1", 0);
     this.syncVisual("user2", 0);
     this.updatePlayBtnUI();
-    if (window.APP_UI) window.APP_UI.updateDraggableUI();
-    if (window.APP_UI) window.APP_UI.updateSortUI();
+    if (window.APP_UI) {
+      window.APP_UI.updateSortUI();
+      window.APP_UI.updateDraggableUI();
+    }
   },
 };
 
