@@ -46,7 +46,21 @@ const APP_CORE = {
         (slot, i) => `
       <div class="Timeline--item" data-id="${slot.id}">
         <div class="thumb">
-          ${slot.videoURL ? `<video src="${slot.videoURL}" muted playsinline></video>` : `<span>${this.TIMES[i]}</span>`}
+          ${
+            slot.videoURL
+              ? `
+                <video src="${slot.videoURL}" muted playsinline></video>
+
+                <button 
+                  class="delete-video-btn"
+                  data-user="${user}"
+                  data-id="${slot.id}"
+                >
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              `
+              : `<span>${this.TIMES[i]}</span>`
+          }
         </div>
         <textarea class="slot-text" data-index="${i}" placeholder="${this.TIMES[i]} 코멘트">${slot.text}</textarea>
       </div>
@@ -234,7 +248,7 @@ const APP_CORE = {
         const el = document.querySelector(`#timeline-${u}`);
         if (el?._sortable) el._sortable.option("disabled", window.isSortLocked);
       });
-      
+
     });
 
     document.querySelectorAll(".SettingUser").forEach((setting) => {
@@ -294,6 +308,40 @@ const APP_CORE = {
           if (visualImg) visualImg.src = imageURL;
         }
       });
+    });
+
+    document.addEventListener("click", (e) => {
+      const deleteBtn = e.target.closest(".delete-video-btn");
+
+      if (!deleteBtn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const user = deleteBtn.dataset.user;
+      const itemId = deleteBtn.dataset.id;
+
+      const targetItem = this.state[user].find((item) => item.id === itemId);
+
+      if (!targetItem) return;
+
+      const ok = confirm("해당 영상을 삭제하시겠습니까?");
+
+      if (!ok) return;
+
+      if (targetItem.videoURL) {
+        URL.revokeObjectURL(targetItem.videoURL);
+      }
+
+      targetItem.videoURL = "";
+
+      this.renderTimeline(user);
+
+      const currentIndex = this.state[user].findIndex(
+        (item) => item.id === itemId,
+      );
+
+      this.syncVisual(user, Math.max(currentIndex, 0));
     });
   },
 
