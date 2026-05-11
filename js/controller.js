@@ -274,7 +274,7 @@ const APP_UI = {
   createPreloadVideo(user, index, url) {
     const view = document.querySelector(`#${user}`);
     const back = view.querySelector(".Videos--users__back");
-    
+
     const nextVideo = document.createElement("video");
     nextVideo.src = url;
     nextVideo.preload = "auto";
@@ -282,8 +282,11 @@ const APP_UI = {
     nextVideo.playsInline = true;
     nextVideo.dataset.preload = index;
     nextVideo.dataset.ready = "false";
+    nextVideo.loop = true; // 루프를 미리 돌려둡니다.
 
-    nextVideo.onloadeddata = () => { nextVideo.dataset.ready = "true"; };
+    nextVideo.onloadeddata = () => {
+      nextVideo.dataset.ready = "true";
+    };
 
     // iOS 보정 및 초기 스타일 (투명하게 대기)
     Object.assign(nextVideo.style, {
@@ -294,7 +297,7 @@ const APP_UI = {
       objectFit: "cover",
       opacity: "0",
       zIndex: "5",
-      transition: "opacity 0.05s ease-in-out"
+      transition: "opacity 0.05s ease-in-out",
     });
 
     back.appendChild(nextVideo);
