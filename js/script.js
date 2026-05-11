@@ -228,17 +228,26 @@ const APP_CORE = {
 
     const preloaded = back.querySelector(`video[data-preload="${index}"]`);
     
-    timeEl.textContent = this.getTimeLabel(index);
-    textEl.textContent = slot.text || (slot.videoURL ? "" : "💤");
+    const applyChange = (targetVideo) => {
+      // 1. 영상 교체 실행
+      window.APP_UI.performVideoExchange(targetVideo, back);
+
+      // 2. 영상이 바뀌는 시점에 텍스트도 변경 (숫자 먼저 넘어감 방지)
+      timeEl.textContent = this.getTimeLabel(index);
+      textEl.textContent = slot.text || (slot.videoURL ? "" : "💤");
+    };
 
     if (preloaded) {
-      // UI 담당자에게 교체를 요청
-      window.APP_UI.performVideoExchange(preloaded, back);
+      applyChange(preloaded);
     } else if (slot.videoURL) {
-      // 프리로드가 없을 때 새로 만드는 로직도 UI가 담당하도록 통합 가능
       window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
       const newVideo = back.querySelector(`video[data-preload="${index}"]`);
-      newVideo.onloadeddata = () => window.APP_UI.performVideoExchange(newVideo, back);
+      // 데이터가 로드된 즉시 실행
+      newVideo.onloadeddata = () => applyChange(newVideo);
+    } else {
+      // 영상이 없는 경우 즉시 텍스트 갱신
+      timeEl.textContent = this.getTimeLabel(index);
+      textEl.textContent = "💤";
     }
   },
 
