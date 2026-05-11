@@ -94,6 +94,11 @@ const APP_CORE = {
 
     this.initSortable(user, container);
     if (window.APP_UI) window.APP_UI.updateSortUI();
+
+    const playable = this.getPlayableIndexes(); 
+    if (window.APP_UI && typeof window.APP_UI.initDots === "function") {
+      window.APP_UI.initDots(playable);
+    }
   },
 
   initSortable(user, el) {
@@ -168,7 +173,6 @@ const APP_CORE = {
     this.syncVisual("user2", 0);
   },
 
-  // script.js 내 수정
   async startPlayback() {
     if (window.isPlaying) return;
     const playable = this.getPlayableIndexes();
@@ -187,7 +191,9 @@ const APP_CORE = {
       // 1. 현재 영상 교체 (이미 프리로드된 것을 사용)
       this.syncVisual("user1", currentIndex);
       this.syncVisual("user2", currentIndex);
-      if (window.APP_UI) window.APP_UI.updateDots(currentIndex);
+      if (window.APP_UI) {
+        window.APP_UI.updateDots(currentIndex, playable);
+      }
 
       // 2. [Double Preload] 다음 것(i+1)과 그다음 것(i+2)을 동시에 준비
       if (nextIndex !== undefined) {

@@ -222,32 +222,42 @@ body {
   }
 
   &--dots {
+    &-wrapper {
+      // (10px * 10개) + (6px * 9개) = 154px
+      width: 148px; 
+      height: 20px; // outline 등 여유 공간
+      overflow: hidden; 
+      margin: 14px auto;
+      position: relative;
+    }
     $dotSize: 10px;
+    $dotGap: 6px;
 
-    @include flex-set;
+    @include flex-set(flex-start);
 
-    width: 100%;
+    width: max-content;
+    gap: $dotGap;
+
     height: $dotSize;
 
-    margin: 14px 0;
-    gap: 6px;
+    margin: 5px;
 
     span {
+      flex-shrink: 0; 
       width: $dotSize;
       height: $dotSize;
-
       display: block;
-
       border-radius: 50%;
-
       background: #d7d7d5;
-
+      &:nth-child(1), &:nth-child(9) {background: #F1F1EF;}
+      &:nth-child(2), &:nth-child(8) {background: #E5E5E5;} 
       &.active {
-        background: #1f1c17;
-
+        background: #1f1c17 !important;
         border: 1px solid white;
         outline: 2px solid #d7d7d5;
+        & + span, & + span + span {background: #d7d7d5;}
       }
+      &:has(+ .active), &:has(+ span + .active) {background: #d7d7d5;}
     }
   }
 }
