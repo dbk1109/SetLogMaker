@@ -213,26 +213,8 @@ const APP_CORE = {
 
     if (back.querySelector(`video[data-preload="${index}"]`)) return;
 
-    const nextVideo = document.createElement("video");
-    nextVideo.src = slot.videoURL;
-    nextVideo.preload = "auto";
-    nextVideo.muted = true;
-    nextVideo.playsInline = true;
-    nextVideo.dataset.preload = index;
-
-    // 브라우저가 미리 실제 렌더링 크기를 계산하여 점프 현상이 줄어듭니다.
-    Object.assign(nextVideo.style, {
-      position: "absolute",
-      inset: "0",
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      opacity: "0", // 완전히 투명하게
-      pointerEvents: "none", // 클릭 방해 금지
-      zIndex: "-1",
-    });
-
-    back.appendChild(nextVideo);
+    // UI 담당자에게 생성을 요청
+    window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
   },
 
   syncVisual(user, index) {
@@ -245,48 +227,18 @@ const APP_CORE = {
     const textEl = view.querySelector(".Videos--users__middle p");
 
     const preloaded = back.querySelector(`video[data-preload="${index}"]`);
-
-    // 기존 영상 정리
-    back.querySelectorAll("video").forEach((v) => {
-      if (v !== preloaded) {
-        v.pause();
-        v.src = "";
-        v.remove();
-      }
-    });
-
+    
     timeEl.textContent = this.getTimeLabel(index);
     textEl.textContent = slot.text || (slot.videoURL ? "" : "💤");
 
     if (preloaded) {
-      // [보정] 투명도만 조절하여 즉시 노출
-      Object.assign(preloaded.style, {
-        opacity: "0.9",
-        zIndex: "10",
-        pointerEvents: "auto",
-      });
-      preloaded.autoplay = true;
-      preloaded.loop = true;
-      preloaded.play();
-      delete preloaded.dataset.preload;
+      // UI 담당자에게 교체를 요청
+      window.APP_UI.performVideoExchange(preloaded, back);
     } else if (slot.videoURL) {
-      const video = document.createElement("video");
-      video.src = slot.videoURL;
-      video.muted = true;
-      video.autoplay = true;
-      video.loop = true;
-      video.playsInline = true;
-      // 초기 생성 시에도 object-fit: cover를 확실히 부여
-      Object.assign(video.style, {
-        position: "absolute",
-        inset: "0",
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
-        opacity: "0.9",
-        zIndex: "10",
-      });
-      back.appendChild(video);
+      // 프리로드가 없을 때 새로 만드는 로직도 UI가 담당하도록 통합 가능
+      window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
+      const newVideo = back.querySelector(`video[data-preload="${index}"]`);
+      newVideo.onloadeddata = () => window.APP_UI.performVideoExchange(newVideo, back);
     }
   },
 

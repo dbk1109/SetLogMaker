@@ -251,7 +251,55 @@ const APP_UI = {
         window.APP_CORE.syncVisual(user, 0);
       }
     });
+  },
+
+  performVideoExchange(newVideo, backElement) {
+    newVideo.style.zIndex = "10";
+    newVideo.style.opacity = "0.9";
+    newVideo.play();
+    delete newVideo.dataset.preload;
+
+    // 이전 영상들 지연 삭제 (깜빡임 방지)
+    setTimeout(() => {
+      backElement.querySelectorAll("video").forEach(v => {
+        if (v !== newVideo) {
+          v.pause();
+          v.src = "";
+          v.remove();
+        }
+      });
+    }, 50);
+  },
+
+  createPreloadVideo(user, index, url) {
+    const view = document.querySelector(`#${user}`);
+    const back = view.querySelector(".Videos--users__back");
+    
+    const nextVideo = document.createElement("video");
+    nextVideo.src = url;
+    nextVideo.preload = "auto";
+    nextVideo.muted = true;
+    nextVideo.playsInline = true;
+    nextVideo.dataset.preload = index;
+    nextVideo.dataset.ready = "false";
+
+    nextVideo.onloadeddata = () => { nextVideo.dataset.ready = "true"; };
+
+    // iOS 보정 및 초기 스타일 (투명하게 대기)
+    Object.assign(nextVideo.style, {
+      position: "absolute",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      opacity: "0",
+      zIndex: "5",
+      transition: "opacity 0.05s ease-in-out"
+    });
+
+    back.appendChild(nextVideo);
   }
+
 };
 
 window.APP_UI = APP_UI;
