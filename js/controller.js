@@ -63,17 +63,39 @@ const APP_UI = {
 
     // 재생 제어
     this.playBtn?.addEventListener("click", () => {
-      if (window.isPlaying) window.APP_CORE.stopPlayback();
-      else {
-        const isMobile = window.innerWidth <= 768;
-        if (isMobile && !!document.fullscreenElement) this.playNotice.classList.add("active");
-        else window.APP_CORE.startPlayback();
+      // 모바일 환경 체크 (768px 이하)
+      const isMobile = window.innerWidth <= 768;
+      const el = document.querySelector("#fullscreenWrap");
+      const isFullscreen = !!document.fullscreenElement || el.classList.contains("ios-fullscreen");
+
+      if (window.isPlaying) {
+        window.APP_CORE.stopPlayback();
+        return;
+      }
+
+      if (isMobile && isFullscreen) {
+        // 메뉴 닫기
+        this.isMenuOpen = false;
+        this.updateMenuUI();
+
+        // 경고창 띄우기
+        if (this.playNotice) {
+          this.playNotice.classList.add("active");
+        }
+      } else {
+        // 그 외 (PC 환경이거나, 모바일이지만 전체화면이 아닐 때) 바로 재생
+        window.APP_CORE.startPlayback();
       }
     });
 
+    // 경고창 '확인' 버튼 클릭 시
     this.playNoticeConfirm?.addEventListener("click", () => {
-      this.playNotice.classList.remove("active");
-      document.querySelector(".controller")?.classList.add("is-hidden");
+      if (this.playNotice) {
+        this.playNotice.classList.remove("active");
+      }
+
+      // 모바일 재생 시작 시에만 메뉴를 가리는 클래스 추가
+      document.body.classList.add("is-playing");
       window.APP_CORE.startPlayback();
     });
 

@@ -876,7 +876,12 @@ body {
   object-fit: cover;
   background-color: black;
 }
-
+.floating-menu-btn i,
+.floating-menu-btn span,
+.drawer-btn i,
+.drawer-btn span {
+  pointer-events: none;
+}
 
 
 
@@ -944,4 +949,9 @@ body {
   width: 100% !important;
   height: 100% !important;
   transform: scale(1) !important;
+}
+
+/* 재생 중 메뉴 숨김 처리 */
+body.is-playing .controller {
+  display: none !important;
 }

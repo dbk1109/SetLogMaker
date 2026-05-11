@@ -168,6 +168,7 @@ const APP_CORE = {
     this.syncVisual("user2", 0);
   },
 
+  // script.js 내 수정
   async startPlayback() {
     if (window.isPlaying) return;
     const playable = this.getPlayableIndexes();
@@ -180,25 +181,25 @@ const APP_CORE = {
       if (!window.isPlaying) break;
 
       const currentIndex = playable[i];
-      const nextIndex = playable[i + 1]; // 다음 재생할 인덱스 확인
+      const nextIndex = playable[i + 1];
 
-      // 1. 현재 영상 동기화 및 재생
       this.syncVisual("user1", currentIndex);
       this.syncVisual("user2", currentIndex);
       if (window.APP_UI) window.APP_UI.updateDots(currentIndex);
 
-      // 2. [핵심] 다음 영상 미리 로드 (Preload)
       if (nextIndex !== undefined) {
         this.preloadNextVideo("user1", nextIndex);
         this.preloadNextVideo("user2", nextIndex);
       }
 
-      // 2초간 대기 (기존 로직 유지)
+      // 2초 대기 구간 (0.1초마다 isPlaying 상태를 체크하여 반응성 높임)
       for (let j = 0; j < 20; j++) {
         if (!window.isPlaying) break;
         await new Promise((r) => setTimeout(r, 100));
       }
     }
+
+    // 루프가 끝나거나 중단되면 호출
     this.stopPlayback();
   },
 
@@ -291,7 +292,21 @@ const APP_CORE = {
 
   stopPlayback() {
     window.isPlaying = false;
-    if (window.APP_UI) window.APP_UI.updatePlayBtnUI();
+
+    // 1. 모든 재생 중인 비디오 일시정지
+    document.querySelectorAll("video").forEach((v) => {
+      v.pause();
+    });
+
+    // 2. UI 및 클래스 복구
+    document.body.classList.remove("is-playing");
+    document
+      .querySelector("#fullscreenWrap")
+      ?.classList.remove("ios-fullscreen");
+
+    if (window.APP_UI) {
+      window.APP_UI.updatePlayBtnUI();
+    }
   },
 
   getPlayableIndexes() {
