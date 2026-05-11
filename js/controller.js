@@ -1,205 +1,203 @@
-/* =========================
-   UI CONTROLLER (controller.js)
-========================= */
-
 const APP_UI = {
+  // 모바일이면 초기 메뉴 열림 상태로 시작
   isMenuOpen: window.innerWidth <= 768,
 
   init() {
-    console.log("UI INIT OK");
     this.cacheDOM();
     this.bindEvents();
-
-    // [수정] 실행 순서 보장: DOM 캐시 후 즉시 모든 UI 텍스트 업데이트
-    this.handleFullscreenChange();
-    this.updateSortUI();
+    
+    // 초기 UI 동기화
     this.updateMenuUI();
-    this.bindPlayNotice();
-
-    // [중요] CORE가 먼저 로드되었다면 재생 버튼 텍스트 강제 업데이트
-    if (window.APP_CORE) {
-      window.APP_CORE.updatePlayBtnUI();
-    }
+    this.updateSortUI();
+    this.updatePlayBtnUI();
+    this.handleFullscreenChange();
   },
 
   cacheDOM() {
     this.drawer = document.querySelector("#floatingDrawer");
     this.menuBtn = document.querySelector("#floatingMenuBtn");
-    this.fullscreenBtn = document.querySelector("#fullscreenBtn");
-    this.fullscreenWrap = document.querySelector("#fullscreenWrap");
     this.sortBtn = document.querySelector("#toggleSort");
-    this.controller = document.querySelector(".controller");
+    this.playBtn = document.querySelector("#playAll");
+    this.fullscreenBtn = document.querySelector("#fullscreenBtn");
     this.playNotice = document.querySelector("#playNotice");
     this.playNoticeConfirm = document.querySelector("#playNoticeConfirm");
   },
 
   bindEvents() {
-    // 메뉴 버튼 클릭
-    this.menuBtn?.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    // 전체화면
+    this.fullscreenBtn?.addEventListener("click", () => {
+      const el = document.querySelector("#fullscreenWrap");
+      if (!document.fullscreenElement) el?.requestFullscreen().catch(console.error);
+      else document.exitFullscreen();
+    });
 
+    document.addEventListener("fullscreenchange", () => this.handleFullscreenChange());
+
+    // 플로팅 메뉴
+    this.menuBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
       this.isMenuOpen = !this.isMenuOpen;
       this.updateMenuUI();
     });
 
-    // 외부 클릭 시 드로어 닫기
     document.addEventListener("click", (e) => {
-      // 클릭된 요소가 컨트롤러(#floatingDrawer, #floatingMenuBtn 등 포함) 내부인지 확인
-      const isInsideController = e.target.closest(".controller");
-
-      // 컨트롤러 밖을 클릭했고, 현재 메뉴가 열려있을 때만 닫기
-      if (!isInsideController && this.isMenuOpen) {
+      if (!e.target.closest(".controller") && this.isMenuOpen) {
         this.isMenuOpen = false;
         this.updateMenuUI();
       }
     });
 
-    // 전체화면 제어
-    this.fullscreenBtn?.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const el = this.fullscreenWrap;
-
-      if (!document.fullscreenElement) {
-        el?.requestFullscreen?.().catch(console.error);
-      } else {
-        document.exitFullscreen?.();
+    // 재생 제어
+    this.playBtn?.addEventListener("click", () => {
+      if (window.isPlaying) window.APP_CORE.stopPlayback();
+      else {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile && !!document.fullscreenElement) this.playNotice.classList.add("active");
+        else window.APP_CORE.startPlayback();
       }
     });
-    document.addEventListener("fullscreenchange", () =>
-      this.handleFullscreenChange(),
-    );
+
+    this.playNoticeConfirm?.addEventListener("click", () => {
+      this.playNotice.classList.remove("active");
+      document.querySelector(".controller")?.classList.add("is-hidden");
+      window.APP_CORE.startPlayback();
+    });
+
+    // [중요] 정렬 잠금 토글 및 클래스 부여
+    this.sortBtn?.addEventListener("click", () => {
+      window.isSortLocked = !window.isSortLocked;
+      this.updateSortUI();
+      
+      // Sortable 객체 상태 업데이트
+      ["user1", "user2"].forEach(u => {
+        const el = document.querySelector(`#timeline-${u}`);
+        if (el?._sortable) el._sortable.option("disabled", window.isSortLocked);
+      });
+    });
+
+    this.bindSettingEvents();
   },
 
   updateMenuUI() {
     if (!this.drawer || !this.menuBtn) return;
-    const icon = this.menuBtn.querySelector("i");
-
     this.drawer.classList.toggle("active", this.isMenuOpen);
     this.menuBtn.classList.toggle("active", this.isMenuOpen);
-    if (icon) {
-      icon.className = this.isMenuOpen
-        ? "fa-solid fa-xmark"
-        : "fa-solid fa-ellipsis";
-    }
-  },
-
-  updateSortUI() {
-    if (!this.sortBtn) return;
-
-    // [수정] window.isSortLocked 상태를 가져와서 아이콘과 텍스트 결정
-    const isLocked = window.isSortLocked;
-
-    this.sortBtn.className = `drawer-btn ${isLocked ? "is-locked" : "is-unlocked"}`;
-    this.sortBtn.innerHTML = `
-      <i class="fa-solid fa-${isLocked ? "lock" : "lock-open"}"></i>
-      <span>순서 이동 ${isLocked ? "잠금됨" : "가능"}</span>
-    `;
-  },
-
-  updateDraggableUI() {
-    document.body.classList.toggle("sort-unlocked", !window.isSortLocked);
-  },
-
-  toggleFullscreen() {
-    const el = this.fullscreenWrap;
-
-    if (!document.fullscreenElement) {
-      el?.requestFullscreen?.().catch(console.error);
-    } else {
-      document.exitFullscreen?.();
-    }
+    this.menuBtn.innerHTML = this.isMenuOpen 
+      ? `<i class="fa-solid fa-xmark"></i>` 
+      : `<i class="fa-solid fa-ellipsis"></i>`;
   },
 
   handleFullscreenChange() {
     const isFS = !!document.fullscreenElement;
-
+    if (!isFS && window.isPlaying) window.APP_CORE.stopPlayback();
+    
     if (this.fullscreenBtn) {
       this.fullscreenBtn.innerHTML = isFS
         ? `<i class="fa-solid fa-compress"></i> <span>닫기</span>`
         : `<i class="fa-solid fa-expand"></i> <span>녹화준비</span>`;
     }
+    if (!isFS) document.querySelector(".controller")?.classList.remove("is-hidden");
+  },
 
-    if (!isFS && window.isPlaying) {
-      // 사용자가 직접 ESC를 누르거나 FS를 나갔을 때만 정지하도록 설계
-      // 만약 알림창(alert) 등으로 풀리는 게 문제라면 이 로직을 검토해야 함
-    }
+  updateSortUI() {
+    if (!this.sortBtn) return;
+    const isLocked = window.isSortLocked;
+    
+    // 버튼 스타일
+    this.sortBtn.className = `drawer-btn ${isLocked ? "is-locked" : "is-unlocked"}`;
+    this.sortBtn.innerHTML = isLocked 
+      ? `<i class="fa-solid fa-lock"></i> <span>잠금됨</span>`
+      : `<i class="fa-solid fa-lock-open"></i> <span>이동 가능</span>`;
+    
+    // [중요] SCSS 커서 제어를 위해 body에 클래스 토글
+    document.body.classList.toggle("sort-unlocked", !isLocked);
+  },
 
-    if (!isFS && this.controller) {
-      this.controller.classList.remove("is-hidden");
+  updatePlayBtnUI() {
+    if (!this.playBtn) return;
+    if (window.isPlaying) {
+      this.playBtn.innerHTML = `<i class="fa-solid fa-pause"></i> <span>일시정지</span>`;
+    } else {
+      this.playBtn.innerHTML = `<i class="fa-solid fa-play"></i> <span>${window.innerWidth <= 768 ? '재생' : '전체 재생'}</span>`;
     }
   },
 
-  syncSortState() {
-    this.updateSortUI(); // 버튼 텍스트/아이콘 변경
-    this.updateDraggableUI(); // 타임라인 클래스 변경
-  },
-
-  bindPlayNotice() {
-    console.log("🔍 STEP 1: bindPlayNotice 함수 진입");
-
-    if (!this.playNotice || !this.playNoticeConfirm) {
-      console.error("❌ 에러: playNotice 또는 Confirm 버튼을 찾을 수 없음");
-      return;
-    }
-
-    const playBtn = document.querySelector("#playAll");
-    console.log("🔍 STEP 2: 재생 버튼 찾기 결과 ->", playBtn);
-
-    this.playNoticeConfirm.addEventListener("click", () => {
-      console.log("🔍 STEP 6: 안내창 확인 버튼 클릭됨");
-      this.playNotice.classList.remove("active");
-      this.controller?.classList.add("is-hidden");
-      window.APP_CORE?.startPlayback?.();
-    });
-
-    playBtn?.addEventListener("click", (e) => {
-      console.log("🔍 STEP 3: 재생 버튼 클릭 이벤트 발생!");
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      console.log(
-        "🔍 STEP 4: 현재 재생 상태(window.isPlaying) ->",
-        window.isPlaying,
-      );
-
-      if (window.isPlaying) {
-        console.log("🔍 STEP 5-A: 이미 재생 중임 -> 정지 실행");
-        window.APP_CORE?.stopPlayback?.();
-        return;
-      }
-
-      const isMobile = window.innerWidth <= 768;
-      const isFS = !!document.fullscreenElement;
-      console.log(
-        `🔍 STEP 5-B: 환경 체크 - 모바일: ${isMobile}, 전체화면: ${isFS}`,
-      );
-
-      if (isMobile && isFS) {
-        console.log("🔍 STEP 5-C: 모바일 전체화면 조건 만족 -> 안내창 표시");
-        this.playNotice.classList.add("active");
-      } else {
-        console.log("🔍 STEP 5-D: 일반 조건 -> 바로 재생 실행");
-        if (!window.APP_CORE)
-          console.error("❌ 에러: window.APP_CORE가 존재하지 않음");
-        window.APP_CORE?.startPlayback?.();
-      }
+  updateDots(index) {
+    document.querySelectorAll(".Menu--dots span").forEach((dot, i) => {
+      dot.classList.toggle("active", i === index);
     });
   },
+
+  bindSettingEvents() {
+    // 텍스트 실시간 반영
+    document.addEventListener("input", (e) => {
+      if (e.target.classList.contains("slot-text")) {
+        const user = e.target.closest(".SettingUser").dataset.user;
+        const itemId = e.target.closest(".Timeline--item").dataset.id;
+        const targetItem = window.APP_CORE.state[user].find(item => item.id === itemId);
+        if (targetItem) {
+          targetItem.text = e.target.value;
+          const currentIndex = window.APP_CORE.state[user].indexOf(targetItem);
+          window.APP_CORE.syncVisual(user, currentIndex);
+        }
+      }
+    });
+
+    // 프로필 업로드
+    document.querySelectorAll(".profile-input").forEach(input => {
+      input.addEventListener("change", (e) => {
+        const user = e.target.closest(".SettingUser").dataset.user;
+        const file = e.target.files[0];
+        if (file) {
+          const url = URL.createObjectURL(file);
+          const label = e.target.closest(".SettingUser--profile").querySelector(".profile-upload");
+          if (label) { label.style.backgroundImage = `url(${url})`; label.textContent = ""; }
+          const img = document.querySelector(`#${user} .Videos--users__profile img`);
+          if (img) img.src = url;
+        }
+      });
+    });
+
+    // 닉네임
+    document.querySelectorAll(".nickname-input").forEach(input => {
+      input.addEventListener("input", (e) => {
+        const user = e.target.closest(".SettingUser").dataset.user;
+        const target = document.querySelector(`#${user} .nickname`);
+        if (target) target.textContent = e.target.value || user;
+      });
+    });
+
+    // 영상 일괄 업로드
+    document.querySelectorAll(".video-input").forEach(input => {
+      input.addEventListener("change", (e) => {
+        const user = e.target.closest(".SettingUser").dataset.user;
+        const files = Array.from(e.target.files).slice(0, 24);
+        files.forEach((file, i) => {
+          if (window.APP_CORE.state[user][i]) {
+            if (window.APP_CORE.state[user][i].videoURL) URL.revokeObjectURL(window.APP_CORE.state[user][i].videoURL);
+            window.APP_CORE.state[user][i].videoURL = URL.createObjectURL(file);
+          }
+        });
+        window.APP_CORE.renderTimeline(user);
+        window.APP_CORE.syncVisual(user, 0);
+      });
+    });
+    
+    // 삭제 버튼
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".delete-video-btn");
+      if (!btn) return;
+      const { user, id } = btn.dataset;
+      const target = window.APP_CORE.state[user].find(item => item.id === id);
+      if (target && confirm("해당 영상을 삭제하시겠습니까?")) {
+        URL.revokeObjectURL(target.videoURL);
+        target.videoURL = "";
+        window.APP_CORE.renderTimeline(user);
+        window.APP_CORE.syncVisual(user, 0);
+      }
+    });
+  }
 };
 
-// 초기화
 window.APP_UI = APP_UI;
-
-function bootUI() {
-  window.APP_UI?.init?.();
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", bootUI);
-} else {
-  bootUI();
-}
+document.addEventListener("DOMContentLoaded", () => APP_UI.init());
