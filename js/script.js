@@ -50,7 +50,7 @@ const APP_CORE = {
     let displayHour = hour % 12;
     displayHour = displayHour === 0 ? 12 : displayHour;
 
-    //const formattedHour = String(displayHour).padStart(2, "0");
+    const formattedHour = String(displayHour).padStart(2, "0");
     const formattedMin = String(min).padStart(2, "0");
 
     return `${displayHour}:${formattedMin}`;
