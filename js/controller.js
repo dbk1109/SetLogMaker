@@ -284,6 +284,16 @@ const APP_UI = {
     nextVideo.dataset.preload = index;
     nextVideo.dataset.ready = "false";
 
+    // [추가] 영상 길이에 맞춰 재생 속도 조절
+    nextVideo.onloadedmetadata = () => {
+      const duration = nextVideo.duration;
+      if (duration > 0 && duration < 2) {
+        // 2초를 채우기 위한 속도 계산 (예: 1초면 0.5배속)
+        // 최소 속도를 0.1 정도로 제한하여 멈춤 방지
+        nextVideo.playbackRate = Math.max(0.1, duration / 2);
+      }
+    };
+    
     nextVideo.onloadeddata = () => { nextVideo.dataset.ready = "true"; };
     nextVideo.play().catch((e) => console.log("자동재생 방지 대응"));
 
