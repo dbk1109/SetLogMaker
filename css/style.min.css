@@ -154,10 +154,12 @@ body section {
   min-width: 0;
   height: auto;
 }
-#setting .TITLE h1 {
+#setting .TITLE {
   color: white;
   margin: 20px 0 40px;
   text-align: center;
+}
+#setting .TITLE h1 {
   font-size: 1.5rem;
   overflow: hidden;
 }
