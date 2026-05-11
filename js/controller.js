@@ -297,6 +297,16 @@ const APP_UI = {
     nextVideo.onloadeddata = () => { nextVideo.dataset.ready = "true"; };
     nextVideo.play().catch((e) => console.log("자동재생 방지 대응"));
 
+    // play() 호출 시 에러가 나도 스크립트가 죽지 않도록 방어
+    const playPromise = nextVideo.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(error => {
+        console.error("Playback failed:", error);
+        // 재생 실패 시에도 ready 상태는 업데이트해서 syncVisual이 판단하게 함
+        nextVideo.dataset.ready = "error"; 
+      });
+    }
+    
     // iOS 보정 및 초기 스타일 (투명하게 대기)
     Object.assign(nextVideo.style, {
       position: "absolute",
