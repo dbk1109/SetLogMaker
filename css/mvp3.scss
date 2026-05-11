@@ -1,0 +1,24 @@
+/* =========================
+   VARIABLES
+========================= */
+
+$visualWidth: 420px;
+
+$colors: (
+  "blueviolet": blueviolet,
+  "white": white,
+  "darkcyan": darkcyan,
+  "orange": orange
+);
+
+/* =========================
+   MIXIN
+========================= */
+
+@mixin flex-set( $justify: center, $align: center, $direction: row ) {
+  display: flex;
+  justify-content: $justify;
+  align-items: $align;
+  flex-direction: $direction;
+}
+

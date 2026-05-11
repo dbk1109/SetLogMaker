@@ -828,8 +828,11 @@ body section {
 }
 
 .Videos--users__back video {
+  width: 100% !important;
+  height: 100% !important;
   -o-object-fit: cover;
      object-fit: cover;
+  background-color: black;
 }
 
 /* =========================

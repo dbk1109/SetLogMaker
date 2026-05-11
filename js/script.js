@@ -202,15 +202,14 @@ const APP_CORE = {
     this.stopPlayback();
   },
 
+  // 영상 미리 로드를 위한 메서드 (iOS 보정 버전)
   preloadNextVideo(user, index) {
     const slot = this.state[user][index];
     if (!slot || !slot.videoURL) return;
 
-    // 이미 생성된 프리로드 태그가 있는지 확인
     const view = document.querySelector(`#${user}`);
     const back = view.querySelector(".Videos--users__back");
 
-    // 중복 생성 방지용 체크
     if (back.querySelector(`video[data-preload="${index}"]`)) return;
 
     const nextVideo = document.createElement("video");
@@ -218,20 +217,21 @@ const APP_CORE = {
     nextVideo.preload = "auto";
     nextVideo.muted = true;
     nextVideo.playsInline = true;
-    nextVideo.dataset.preload = index; // 식별자 부여
+    nextVideo.dataset.preload = index;
 
-    // 화면 밖이나 투명하게 숨김 처리
+    // 브라우저가 미리 실제 렌더링 크기를 계산하여 점프 현상이 줄어듭니다.
     Object.assign(nextVideo.style, {
       position: "absolute",
-      width: "1px",
-      height: "1px",
-      opacity: "0.01",
+      inset: "0",
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      opacity: "0", // 완전히 투명하게
+      pointerEvents: "none", // 클릭 방해 금지
       zIndex: "-1",
     });
 
     back.appendChild(nextVideo);
-
-    // 메모리 관리를 위해 현재 재생이 끝나면 삭제하기 쉽도록 설정
   },
 
   syncVisual(user, index) {
@@ -243,9 +243,9 @@ const APP_CORE = {
     const timeEl = view.querySelector(".Videos--users__middle h3");
     const textEl = view.querySelector(".Videos--users__middle p");
 
-    // 기존 비디오 제거 (프리로드된 비디오가 있다면 그것을 재사용하거나 새로 생성)
     const preloaded = back.querySelector(`video[data-preload="${index}"]`);
 
+    // 기존 영상 정리
     back.querySelectorAll("video").forEach((v) => {
       if (v !== preloaded) {
         v.pause();
@@ -258,28 +258,24 @@ const APP_CORE = {
     textEl.textContent = slot.text || (slot.videoURL ? "" : "💤");
 
     if (preloaded) {
-      // 미리 로드된 영상이 있으면 스타일만 변경해서 바로 표시
+      // [보정] 투명도만 조절하여 즉시 노출
       Object.assign(preloaded.style, {
-        position: "absolute",
-        inset: "0",
-        width: "100%",
-        height: "100%",
-        objectFit: "cover",
         opacity: "0.9",
         zIndex: "10",
+        pointerEvents: "auto",
       });
       preloaded.autoplay = true;
       preloaded.loop = true;
       preloaded.play();
-      delete preloaded.dataset.preload; // 프리로드 태그 제거
+      delete preloaded.dataset.preload;
     } else if (slot.videoURL) {
-      // 미리 로드된 게 없으면 새로 생성
       const video = document.createElement("video");
       video.src = slot.videoURL;
       video.muted = true;
       video.autoplay = true;
       video.loop = true;
       video.playsInline = true;
+      // 초기 생성 시에도 object-fit: cover를 확실히 부여
       Object.assign(video.style, {
         position: "absolute",
         inset: "0",
