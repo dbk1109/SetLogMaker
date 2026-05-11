@@ -555,6 +555,7 @@ body {
   cursor: pointer;
 
   transition: 0.2s;
+  flex-shrink: 0;
 
   &:hover {
     opacity: 0.7;
@@ -567,7 +568,6 @@ body {
 
 .nickname-input {
   padding: 10px;
-  flex: 1;
   border-bottom: 2px solid blueviolet;
 }
 
@@ -819,6 +819,9 @@ body {
 
     height: unset;
     padding: 16px;
+  }
+  .nickname-input {
+    width: calc(100% - 4rem - 10px);
   }
 
   #fullscreenWrap {

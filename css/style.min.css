@@ -587,6 +587,7 @@ body section {
   text-align: center;
   cursor: pointer;
   transition: 0.2s;
+  flex-shrink: 0;
 }
 .profile-upload:hover {
   opacity: 0.7;
@@ -597,7 +598,6 @@ body section {
 ========================= */
 .nickname-input {
   padding: 10px;
-  flex: 1;
   border-bottom: 2px solid blueviolet;
 }
 
@@ -791,6 +791,9 @@ body section {
     width: 100%;
     height: unset;
     padding: 16px;
+  }
+  .nickname-input {
+    width: calc(100% - 4rem - 10px);
   }
   #fullscreenWrap {
     width: 100%;
