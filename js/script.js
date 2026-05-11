@@ -182,16 +182,23 @@ const APP_CORE = {
 
       const currentIndex = playable[i];
       const nextIndex = playable[i + 1];
+      const afterNextIndex = playable[i + 2];
 
+      // 1. 현재 영상 교체 (이미 프리로드된 것을 사용)
       this.syncVisual("user1", currentIndex);
       this.syncVisual("user2", currentIndex);
       if (window.APP_UI) window.APP_UI.updateDots(currentIndex);
 
+      // 2. [Double Preload] 다음 것(i+1)과 그다음 것(i+2)을 동시에 준비
       if (nextIndex !== undefined) {
         this.preloadNextVideo("user1", nextIndex);
         this.preloadNextVideo("user2", nextIndex);
       }
-
+      if (afterNextIndex !== undefined) {
+        // 한 칸 더 앞의 영상을 미리 네트워크에서 땡겨옴
+        this.preloadNextVideo("user1", afterNextIndex);
+        this.preloadNextVideo("user2", afterNextIndex);
+      }
       // 2초 대기 구간 (0.1초마다 isPlaying 상태를 체크하여 반응성 높임)
       for (let j = 0; j < 20; j++) {
         if (!window.isPlaying) break;

@@ -268,7 +268,7 @@ const APP_UI = {
           v.remove();
         }
       });
-    }, 50);
+    }, 100);
   },
 
   createPreloadVideo(user, index, url) {
@@ -280,10 +280,11 @@ const APP_UI = {
     nextVideo.preload = "auto";
     nextVideo.muted = true;
     nextVideo.playsInline = true;
+    nextVideo.loop = true;
     nextVideo.dataset.preload = index;
     nextVideo.dataset.ready = "false";
-    nextVideo.loop = true; // 루프를 미리 돌려둡니다.
 
+    nextVideo.onloadeddata = () => { nextVideo.dataset.ready = "true"; };
     nextVideo.play().catch((e) => console.log("자동재생 방지 대응"));
 
     // iOS 보정 및 초기 스타일 (투명하게 대기)
