@@ -5,20 +5,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" viewport-fit="cover" />
   <title>︵‿˚̣̣̣͙⋆⁺𝐦𝐰 𝐬𝐞𝐭 𝐥𝐨𝐠 𝐦𝐚𝐤𝐞𝐫⋆₊˚̣̣̣͙‿︵</title>
-  <link rel="stylesheet" href="./css/style.min.css?v05112031" />
+  <link rel="stylesheet" href="./css/style.min.css?v=0511" />
+  <!--<link rel="stylesheet" href="./css/mvp3.min.css?v=0511">-->
   <script src="https://kit.fontawesome.com/02bd83a24e.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
-  <!--<p class="version">V2.0</p>-->
-
   <section id="setting">
 
     <div class="TITLE">
       <h1>︵‿˚̣̣̣͙⋆⁺𝐦𝐰 𝐬𝐞𝐭 𝐥𝐨𝐠 𝐦𝐚𝐤𝐞𝐫⋆₊˚̣̣̣͙‿︵</h1>
-      <p>v2.9 (26.05.11)</p>
+      <p>v2.9.4</p>
     </div>
     <div class="SettingWrap">
+
+      <div class="SettingUser">
+        <h2>환경 설정</h2>
+        <div class="SettingWrap">
+          <label class="time-option">
+            <input type="checkbox" id="timeFormatToggle">
+            <span class="slider"></span>
+            <span class="label-text">24시간제로 보기</span>
+          </label>
+        </div>
+      </div>
 
       <div class="SettingUser" data-user="user1">
         <h2>USER 1</h2>
@@ -51,9 +61,6 @@
         </div>
         <div class="Timeline" id="timeline-user2"></div>
       </div>
-      <!--<button id="openPreview" class="btn">
-        새창열기
-      </button>-->
 
     </div>
 
@@ -187,7 +194,6 @@
     </div>
 
   </section>
-
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <script src="./js/script.js"></script>
