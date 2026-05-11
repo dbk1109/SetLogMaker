@@ -129,6 +129,25 @@ const APP_UI = {
   },
 
   bindSettingEvents() {
+    // 1. 시간제 변경 토글 이벤트 (추가)
+    const timeToggle = document.querySelector("#timeFormatToggle");
+    timeToggle?.addEventListener("change", (e) => {
+      window.APP_CORE.state.is24h = e.target.checked;
+      window.APP_CORE.renderAll(); // 전체 다시 렌더링하여 시간 텍스트 교체
+    });
+
+    // 2. 텍스트 실시간 반영 (기존 유지)
+    document.addEventListener("input", (e) => {
+      if (e.target.classList.contains("slot-text")) {
+        const settingUser = e.target.closest(".SettingUser");
+        if(!settingUser) return;
+        const user = settingUser.dataset.user;
+        const itemId = e.target.closest(".Timeline--item").dataset.id;
+        const targetItem = window.APP_CORE.state[user].find(item => item.id === id);
+        // ... 생략 (기존 코드와 동일)
+      }
+    });
+
     // 텍스트 실시간 반영
     document.addEventListener("input", (e) => {
       if (e.target.classList.contains("slot-text")) {

@@ -1,17 +1,37 @@
 const APP_CORE = {
+  // 기준 시간은 유지 (내부 계산용)
   TIMES: [
-    "4:00", "5:00", "6:00", "7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "01:00", "02:00", "03:00",
-    "4:00", "5:00", "6:00", "7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "01:00", "02:00", "03:00"
+    "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00",
+    "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00", "00:00", "01:00", "02:00", "03:00"
   ],
-  state: { user1: [], user2: [] },
+  state: { 
+    user1: [], 
+    user2: [],
+    is24h: false // 시간제 상태 추가
+  },
 
   init() {
     window.isPlaying = false;
-    // 초기 잠금 상태 설정 (모바일은 기본 잠금)
     window.isSortLocked = window.innerWidth <= 768;
     this.initData("user1");
     this.initData("user2");
     this.renderAll();
+  },
+
+  // 인덱스에 따른 시간 텍스트 생성 로직
+  getTimeLabel(index) {
+    const rawTime = this.TIMES[index];
+    if (this.state.is24h) return rawTime;
+
+    // 12시간제 변환 (04:00 포맷 기준)
+    let [hour, min] = rawTime.split(':').map(Number);
+    let displayHour = hour % 12;
+    displayHour = displayHour === 0 ? 12 : displayHour;
+
+    const formattedHour = String(displayHour).padStart(2, "0");
+    const formattedMin = String(min).padStart(2, "0");
+    
+    return `${formattedHour}:${formattedMin}`;
   },
 
   initData(user) {
@@ -29,7 +49,7 @@ const APP_CORE = {
     container.innerHTML = this.state[user].map((slot, i) => `
       <div class="Timeline--item" data-id="${slot.id}">
         <div class="Timeline--header">
-          <span class="time-label">${this.TIMES[i]}</span>
+          <span class="time-label">${this.getTimeLabel(i)}</span> <!-- 메서드 호출로 변경 -->
         </div>
         <div class="thumb ${slot.videoURL ? "" : "empty"}">
           <video src="${slot.videoURL}" muted playsinline></video>
@@ -43,7 +63,6 @@ const APP_CORE = {
     `).join("");
 
     this.initSortable(user, container);
-    // 렌더링 후 UI 상태 동기화 (body 클래스 등)
     if (window.APP_UI) window.APP_UI.updateSortUI();
   },
 
@@ -62,7 +81,7 @@ const APP_CORE = {
 
         allItems.forEach((item, i) => {
           const timeLabel = item.querySelector(".time-label");
-          if (timeLabel) timeLabel.textContent = this.TIMES[i];
+          if (timeLabel) timeLabel.textContent = this.getTimeLabel(i); // 시간 레이블 업데이트
           const textarea = item.querySelector(".slot-text");
           if (textarea) textarea.dataset.index = i;
         });
@@ -82,7 +101,7 @@ const APP_CORE = {
     const textEl = view.querySelector(".Videos--users__middle p");
 
     back.querySelectorAll("video").forEach(v => { v.pause(); v.src = ""; v.remove(); });
-    timeEl.textContent = this.TIMES[index];
+    timeEl.textContent = this.getTimeLabel(index); // 시간 레이블 업데이트
     textEl.textContent = slot.text || (slot.videoURL ? "" : "💤");
 
     if (slot.videoURL) {
@@ -92,6 +111,14 @@ const APP_CORE = {
       Object.assign(video.style, { position: "absolute", inset: "0", width: "100%", height: "100%", objectFit: "cover", opacity: "0.9", zIndex: "10" });
       back.appendChild(video);
     }
+  },
+  
+  // 모든 렌더링 갱신 (시간제 변경 시 사용)
+  renderAll() {
+    this.renderTimeline("user1");
+    this.renderTimeline("user2");
+    this.syncVisual("user1", 0);
+    this.syncVisual("user2", 0);
   },
 
   async startPlayback() {
