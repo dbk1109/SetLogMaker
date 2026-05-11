@@ -827,6 +827,22 @@ body {
   .nickname-input {
     width: calc(100% - 4rem - 10px);
   }
+  .Timeline {
+    gap: 10px;
+  }
+  .Timeline--item {
+    padding: 10px;
+  }
+  .Timeline--item:not(:last-child)::after {
+    font-size: 14px;
+    right: -10px;
+  }
+  .thumb {
+    max-height: 64px;
+  }
+  .slot-text {
+    font-size: 12px;
+  }
 
   #fullscreenWrap {
     width: 100%;
