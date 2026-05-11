@@ -111,10 +111,11 @@ body {
   height: 93dvh;
 
   //노치대응 env(safe-area-inset-top/bottom)
-  padding-top: 24px;
-  padding-bottom: 24px;
-  padding-left: 10px;
-  padding-right: 10px;
+  //padding-top: env(safe-area-inset-top);
+  //padding-bottom: env(safe-area-inset-bottom);
+  //padding-left: 10px;
+  //padding-right: 10px;
+  padding: 0 10px;
 
   overflow: hidden;
 
