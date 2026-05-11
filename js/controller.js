@@ -136,28 +136,28 @@ const APP_UI = {
       window.APP_CORE.renderAll(); // 전체 다시 렌더링하여 시간 텍스트 교체
     });
 
-    // 2. 텍스트 실시간 반영 (기존 유지)
+    // 텍스트 실시간 반영 (수정 및 최적화)
     document.addEventListener("input", (e) => {
       if (e.target.classList.contains("slot-text")) {
         const settingUser = e.target.closest(".SettingUser");
-        if(!settingUser) return;
+        if (!settingUser) return;
+        
         const user = settingUser.dataset.user;
         const itemId = e.target.closest(".Timeline--item").dataset.id;
-        const targetItem = window.APP_CORE.state[user].find(item => item.id === id);
-        // ... 생략 (기존 코드와 동일)
-      }
-    });
-
-    // 텍스트 실시간 반영
-    document.addEventListener("input", (e) => {
-      if (e.target.classList.contains("slot-text")) {
-        const user = e.target.closest(".SettingUser").dataset.user;
-        const itemId = e.target.closest(".Timeline--item").dataset.id;
+        
+        // [수정] id -> itemId로 변수명 일치 및 할당 확인
         const targetItem = window.APP_CORE.state[user].find(item => item.id === itemId);
+        
         if (targetItem) {
           targetItem.text = e.target.value;
           const currentIndex = window.APP_CORE.state[user].indexOf(targetItem);
+          
+          // 현재 화면에 보이는 visual 업데이트
           window.APP_CORE.syncVisual(user, currentIndex);
+          
+          // [추가] 프리로드된 비디오의 텍스트도 실시간으로 반영하고 싶다면 
+          // syncVisual이 호출될 때 자동으로 처리되므로 별도 추가 로직은 필요 없으나,
+          // 오타 수정(id -> itemId)은 반드시 필요합니다.
         }
       }
     });
