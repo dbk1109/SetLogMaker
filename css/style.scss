@@ -927,3 +927,21 @@ body {
     }
   }
 }
+/* 아이폰용 유사 전체화면 스타일 */
+.ios-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important; /* 최신 브라우저용 동적 높이 */
+  z-index: 9999 !important;
+  background: #000 !important;
+  border-radius: 0 !important; /* 둥근 모서리 해제 */
+}
+
+/* 유사 전체화면 시 내부 레이아웃 고정 */
+.ios-fullscreen #visual {
+  width: 100% !important;
+  height: 100% !important;
+  transform: scale(1) !important;
+}

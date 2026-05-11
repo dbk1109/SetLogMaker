@@ -27,8 +27,22 @@ const APP_UI = {
     // 전체화면
     this.fullscreenBtn?.addEventListener("click", () => {
       const el = document.querySelector("#fullscreenWrap");
-      if (!document.fullscreenElement) el?.requestFullscreen().catch(console.error);
-      else document.exitFullscreen();
+
+      // 1. 표준 API 시도 (PC, 안드로이드, 아이패드)
+      if (el.requestFullscreen) {
+        if (!document.fullscreenElement) {
+          el.requestFullscreen().catch(console.error);
+        } else {
+          document.exitFullscreen();
+        }
+      }
+      // 2. iOS 아이폰을 위한 대응 (CSS 클래스 토글)
+      else {
+        el.classList.toggle("ios-fullscreen");
+
+        // 아이폰에서 상단 바/하단 바를 숨기기 위해 주소창 숨김 유도
+        window.scrollTo(0, 0);
+      }
     });
 
     document.addEventListener("fullscreenchange", () => this.handleFullscreenChange());
