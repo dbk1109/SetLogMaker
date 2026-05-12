@@ -74,7 +74,6 @@ const APP_CORE = {
   clearAllData() {
     ["user1", "user2"].forEach((user) => {
       this.state[user].forEach((slot) => {
-        // 영상 메모리 해제
         if (slot.videoURL) URL.revokeObjectURL(slot.videoURL);
         slot.text = "";
         slot.videoURL = "";
@@ -84,7 +83,7 @@ const APP_CORE = {
     const titleInput = document.querySelector("#titleTextChange");
     const titleDisplay = document.querySelector(".title--text p");
     if (titleInput) titleInput.value = "";
-    if (titleDisplay) titleDisplay.value = "";
+    if (titleDisplay) titleDisplay.textContent = "💚💜";
 
     this.renderAll(); // 화면 갱신
   },
