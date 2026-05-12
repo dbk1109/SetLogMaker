@@ -82,7 +82,9 @@ const APP_CORE = {
     });
     // 타이틀 초기화 (선택 사항)
     const titleInput = document.querySelector("#titleTextChange");
+    const titleDisplay = document.querySelector(".title--text p");
     if (titleInput) titleInput.value = "";
+    if (titleDisplay) titleDisplay.value = "";
 
     this.renderAll(); // 화면 갱신
   },
