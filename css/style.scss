@@ -226,8 +226,8 @@ body {
   width: 100%;
   align-items: stretch;
   flex-direction: row;
-
-  > label {
+  gap: 10px;
+  > * {
     width: 100%;
     padding: 16px;
     border-radius: 10px;
@@ -236,6 +236,7 @@ body {
     box-shadow: var(--shadow-card);
     @include flex-set(space-between, center);
     flex: 1;
+    gap: 10px;
   }
 
   .label-text {
@@ -282,8 +283,6 @@ body {
     }
   }
   &--title {
-    @include flex-set(flex-start, center, column);
-    gap: 10px;
     input { 
       min-width: 40%;
       background: var(--input-bg);
@@ -970,6 +969,15 @@ body {
   }
 
   .btn-upload {
+    width: 100%;
+  }
+  .option--save {
+    flex-direction: column;
+      align-items: start;
+  }
+  .option--save .save--btns {
+    justify-content: flex-start;
+    flex-direction: row-reverse;
     width: 100%;
   }
 }

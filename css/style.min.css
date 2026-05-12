@@ -309,8 +309,9 @@ body section {
   width: 100%;
   align-items: stretch;
   flex-direction: row;
+  gap: 10px;
 }
-.option > label {
+.option > * {
   width: 100%;
   padding: 16px;
   border-radius: 10px;
@@ -322,6 +323,7 @@ body section {
   align-items: center;
   flex-direction: row;
   flex: 1;
+  gap: 10px;
 }
 .option .label-text {
   color: var(--color-lightGrey);
@@ -363,13 +365,6 @@ body section {
 }
 .option--time input:checked + .slider::after {
   left: 22px;
-}
-.option--title {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-  gap: 10px;
 }
 .option--title input {
   min-width: 40%;
@@ -972,6 +967,15 @@ body section {
     transform: scale(1) !important;
   }
   .btn-upload {
+    width: 100%;
+  }
+  .option--save {
+    flex-direction: column;
+    align-items: start;
+  }
+  .option--save .save--btns {
+    justify-content: flex-start;
+    flex-direction: row-reverse;
     width: 100%;
   }
 }
