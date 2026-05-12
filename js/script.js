@@ -38,7 +38,22 @@ const APP_CORE = {
 
   // 데이터를 로컬 저장소용 객체로 변환
   getStorageData() {
+    // 저장 직전, 현재 화면에 입력된 텍스트들을 state에 강제 동기화 (누락 방지)
+    ["user1", "user2"].forEach(user => {
+      const container = document.querySelector(`#timeline-${user}`);
+      if (container) {
+        const textareas = container.querySelectorAll(".slot-text");
+        textareas.forEach((area, i) => {
+          if (this.state[user][i]) {
+            // 화면에 입력된 textarea의 실제 값을 state에 넣음
+            this.state[user][i].text = area.value; 
+          }
+        });
+      }
+    });
+
     return {
+      // videoURL은 무조건 빈 값으로 저장하여 용량 최적화 및 엑박 방지
       user1: this.state.user1.map(item => ({ text: item.text, videoURL: "" })),
       user2: this.state.user2.map(item => ({ text: item.text, videoURL: "" })),
       is24h: this.state.is24h,
@@ -56,25 +71,23 @@ const APP_CORE = {
     if (data.is24h !== undefined) this.state.is24h = data.is24h;
     
     ["user1", "user2"].forEach(user => {
-      // 1. 슬롯 텍스트 복구
+      // 1. 슬롯 텍스트 복구 (영상 주소는 무시)
       if (data[user]) {
         data[user].forEach((savedItem, i) => {
           if (this.state[user][i]) {
             this.state[user][i].text = savedItem.text || "";
-            this.state[user][i].videoURL = "";
+            this.state[user][i].videoURL = ""; // 영상 경로는 비움
           }
         });
       }
 
-      // 2. 닉네임 UI 복구
+      // 2. 닉네임 UI 즉시 반영 (비주얼 영역 포함)
       if (data.profiles) {
-        const nameVal = data.profiles[`${user}Name` || ""];
+        const nameVal = data.profiles[`${user}Name`] || "";
         
-        // 설정창 입력칸
         const nameInput = document.querySelector(`.SettingUser[data-user="${user}"] .nickname-input`);
         if (nameInput) nameInput.value = nameVal;
 
-        // 비주얼 영역 텍스트
         const nameDisplay = document.querySelector(`#${user} .nickname`);
         if (nameDisplay) {
           nameDisplay.textContent = nameVal || (user === "user1" ? "user1" : "user2");
