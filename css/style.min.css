@@ -367,7 +367,7 @@ body section {
   left: 22px;
 }
 .option--title input {
-  min-width: 40%;
+  width: 130px;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
   padding: 12px;
