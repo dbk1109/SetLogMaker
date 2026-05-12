@@ -152,7 +152,7 @@ body {
     background: #111;
 
     #visual {
-      width: 420px;
+      width: $visualWidth;
       max-width: 100dvw;
       height: 80dvh;
 
@@ -165,7 +165,9 @@ body {
 #visual {
   @include flex-set(space-between, stretch, column);
 
-  width: 100%;
+  width: auto;
+  max-width: $visualWidth;
+  aspect-ratio: 8 / 16;
   height: 93dvh;
 
   padding-top: calc(24px + env(safe-area-inset-top));
@@ -176,13 +178,12 @@ body {
   overflow: hidden;
 
   border: 5px solid blueviolet;
-  border-radius: 40px;
+  border-radius: 46px;
 
   background: white;
 
   position: fixed;
   top: 30px;
-  max-width: $visualWidth;
 }
 
 /* =========================
@@ -662,6 +663,7 @@ body {
 
   transition: 0.2s;
   flex-shrink: 0;
+  color: var(--color-black);
 
   &:hover {
     opacity: 0.7;
@@ -969,11 +971,6 @@ body {
 /* =========================
    SAFETY
 ========================= */
-
-#fullscreenWrap,
-#setting {
-  min-width: 0;
-}
 
 .Videos--users__back video {
   width: 100% !important;

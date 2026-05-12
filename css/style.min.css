@@ -250,7 +250,9 @@ body section {
   justify-content: space-between;
   align-items: stretch;
   flex-direction: column;
-  width: 100%;
+  width: auto;
+  max-width: 420px;
+  aspect-ratio: 8/16;
   height: 93dvh;
   padding-top: calc(24px + env(safe-area-inset-top));
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
@@ -258,11 +260,10 @@ body section {
   padding-right: 10px;
   overflow: hidden;
   border: 5px solid blueviolet;
-  border-radius: 40px;
+  border-radius: 46px;
   background: white;
   position: fixed;
   top: 30px;
-  max-width: 420px;
 }
 
 /* =========================
@@ -715,6 +716,7 @@ body section {
   cursor: pointer;
   transition: 0.2s;
   flex-shrink: 0;
+  color: var(--color-black);
 }
 .profile-upload:hover {
   opacity: 0.7;
@@ -960,11 +962,6 @@ body section {
 /* =========================
    SAFETY
 ========================= */
-#fullscreenWrap,
-#setting {
-  min-width: 0;
-}
-
 .Videos--users__back video {
   width: 100% !important;
   height: 100% !important;
