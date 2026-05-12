@@ -226,9 +226,9 @@ const APP_UI = {
         if (!settingUser) return;
 
         const user = settingUser.dataset.user;
-        const itemId = e.target.closest(".Timeline--item").dataset.id;
+        const itemId = e.target.closest(".Timeline--item").dataset.id; // dataset.id 확인
 
-        // [수정] id -> itemId로 변수명 일치 및 할당 확인
+        // find 조건에서 item.id === itemId로 확실히 매칭
         const targetItem = window.APP_CORE.state[user].find(
           (item) => item.id === itemId,
         );
@@ -237,12 +237,9 @@ const APP_UI = {
           targetItem.text = e.target.value;
           const currentIndex = window.APP_CORE.state[user].indexOf(targetItem);
 
-          // 현재 화면에 보이는 visual 업데이트
+          // 현재 재생 중이거나 선택된 인덱스인 경우에만 visual 업데이트
+          // (전체 재생 중이 아닐 때 현재 슬롯의 텍스트 수정을 바로 보기 위함)
           window.APP_CORE.syncVisual(user, currentIndex);
-
-          // [추가] 프리로드된 비디오의 텍스트도 실시간으로 반영하고 싶다면
-          // syncVisual이 호출될 때 자동으로 처리되므로 별도 추가 로직은 필요 없으나,
-          // 오타 수정(id -> itemId)은 반드시 필요합니다.
         }
       }
     });
