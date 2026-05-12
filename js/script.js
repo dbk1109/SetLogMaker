@@ -40,7 +40,6 @@ const APP_CORE = {
     this.renderAll();
   },
 
-  // 인덱스에 따른 시간 텍스트 생성 로직
   getTimeLabel(index) {
     const rawTime = this.TIMES[index];
     if (this.state.is24h) return rawTime;
@@ -95,7 +94,7 @@ const APP_CORE = {
     this.initSortable(user, container);
     if (window.APP_UI) window.APP_UI.updateSortUI();
 
-    const playable = this.getPlayableIndexes(); 
+    const playable = this.getPlayableIndexes();
     if (window.APP_UI && typeof window.APP_UI.initDots === "function") {
       window.APP_UI.initDots(playable);
     }
@@ -126,6 +125,20 @@ const APP_CORE = {
         this.syncVisual(user, 0);
       },
     });
+  },
+
+  // 영상 미리 로드를 위한 메서드 (iOS 보정 버전)
+  preloadNextVideo(user, index) {
+    const slot = this.state[user][index];
+    if (!slot || !slot.videoURL) return;
+
+    const view = document.querySelector(`#${user}`);
+    const back = view.querySelector(".Videos--users__back");
+
+    if (back.querySelector(`video[data-preload="${index}"]`)) return;
+
+    // UI 담당자에게 생성을 요청
+    window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
   },
 
   syncVisual(user, index) {
@@ -165,12 +178,96 @@ const APP_CORE = {
     }
   },
 
-  // 모든 렌더링 갱신 (시간제 변경 시 사용)
-  renderAll() {
-    this.renderTimeline("user1");
-    this.renderTimeline("user2");
-    this.syncVisual("user1", 0);
-    this.syncVisual("user2", 0);
+  syncVisual(user, index) {
+    const slot = this.state[user][index];
+    const view = document.querySelector(`#${user}`);
+
+    if (!view || !slot) return;
+
+    const back = view.querySelector(".Videos--users__back");
+    const timeEl = view.querySelector(".Videos--users__middle h3");
+    const textEl = view.querySelector(".Videos--users__middle p");
+
+    const preloaded = back.querySelector(`video[data-preload="${index}"]`);
+
+    // [공통] 텍스트 변경 및 영상 교체 시도
+    const applyChange = (targetVideo) => {
+      timeEl.textContent = this.getTimeLabel(index);
+      textEl.textContent = slot.text || (slot.videoURL ? "" : "💤");
+
+      if (targetVideo) {
+        window.APP_UI.performVideoExchange(targetVideo, back);
+      } else {
+        // 영상이 없거나 로드 실패 시 청소
+        back.querySelectorAll("video").forEach((v) => {
+          v.style.opacity = "0";
+          setTimeout(() => {
+            v.pause();
+            v.src = "";
+            v.remove();
+          }, 50);
+        });
+      }
+    };
+
+    if (slot.videoURL) {
+      // 1. 이미 프리로드된 영상이 있고 준비 상태라면 즉시 실행
+      if (preloaded && preloaded.dataset.ready === "true") {
+        applyChange(preloaded);
+      }
+      // 2. 프리로드가 없거나 아직 로딩 중인 경우
+      else {
+        if (!preloaded) {
+          window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
+        }
+        const target = back.querySelector(`video[data-preload="${index}"]`);
+
+        // [핵심 보완] 영상 로딩을 기다리되, 실패하거나 늦어지면 텍스트라도 먼저 바꿈
+        let handled = false;
+        const timeout = setTimeout(() => {
+          if (!handled) {
+            handled = true;
+            applyChange(null); // 영상 없이 텍스트만 업데이트
+            console.warn(`Video load timeout for index ${index}`);
+          }
+        }, 500); // 0.5초만 기다림
+
+        target.onloadeddata = () => {
+          if (!handled) {
+            handled = true;
+            clearTimeout(timeout);
+            applyChange(target);
+          }
+        };
+
+        // 영상 에러 발생 시 처리
+        target.onerror = () => {
+          if (!handled) {
+            handled = true;
+            clearTimeout(timeout);
+            applyChange(null);
+          }
+        };
+      }
+    } else {
+      // 3. 영상이 없는 슬롯
+      applyChange(null);
+    }
+  },
+  
+  getPlayableIndexes() {
+    const result = [];
+    for (let i = 0; i < this.TIMES.length; i++) {
+      if (
+        this.state.user1[i].videoURL ||
+        this.state.user1[i].text ||
+        this.state.user2[i].videoURL ||
+        this.state.user2[i].text
+      ) {
+        result.push(i);
+      }
+    }
+    return result;
   },
 
   async startPlayback() {
@@ -216,93 +313,6 @@ const APP_CORE = {
     this.stopPlayback();
   },
 
-  // 영상 미리 로드를 위한 메서드 (iOS 보정 버전)
-  preloadNextVideo(user, index) {
-    const slot = this.state[user][index];
-    if (!slot || !slot.videoURL) return;
-
-    const view = document.querySelector(`#${user}`);
-    const back = view.querySelector(".Videos--users__back");
-
-    if (back.querySelector(`video[data-preload="${index}"]`)) return;
-
-    // UI 담당자에게 생성을 요청
-    window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
-  },
-
-  syncVisual(user, index) {
-    const slot = this.state[user][index];
-    const view = document.querySelector(`#${user}`);
-
-    if (!view || !slot) return;
-
-    const back = view.querySelector(".Videos--users__back");
-    const timeEl = view.querySelector(".Videos--users__middle h3");
-    const textEl = view.querySelector(".Videos--users__middle p");
-
-    const preloaded = back.querySelector(`video[data-preload="${index}"]`);
-    
-    // [공통] 텍스트 변경 및 영상 교체 시도
-    const applyChange = (targetVideo) => {
-      timeEl.textContent = this.getTimeLabel(index);
-      textEl.textContent = slot.text || (slot.videoURL ? "" : "💤");
-
-      if (targetVideo) {
-        window.APP_UI.performVideoExchange(targetVideo, back);
-      } else {
-        // 영상이 없거나 로드 실패 시 청소
-        back.querySelectorAll("video").forEach(v => {
-          v.style.opacity = "0";
-          setTimeout(() => { v.pause(); v.src = ""; v.remove(); }, 50);
-        });
-      }
-    };
-
-    if (slot.videoURL) {
-      // 1. 이미 프리로드된 영상이 있고 준비 상태라면 즉시 실행
-      if (preloaded && preloaded.dataset.ready === "true") {
-        applyChange(preloaded);
-      } 
-      // 2. 프리로드가 없거나 아직 로딩 중인 경우
-      else {
-        if (!preloaded) {
-          window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
-        }
-        const target = back.querySelector(`video[data-preload="${index}"]`);
-        
-        // [핵심 보완] 영상 로딩을 기다리되, 실패하거나 늦어지면 텍스트라도 먼저 바꿈
-        let handled = false;
-        const timeout = setTimeout(() => {
-          if (!handled) {
-            handled = true;
-            applyChange(null); // 영상 없이 텍스트만 업데이트
-            console.warn(`Video load timeout for index ${index}`);
-          }
-        }, 500); // 0.5초만 기다림
-
-        target.onloadeddata = () => {
-          if (!handled) {
-            handled = true;
-            clearTimeout(timeout);
-            applyChange(target);
-          }
-        };
-        
-        // 영상 에러 발생 시 처리
-        target.onerror = () => {
-          if (!handled) {
-            handled = true;
-            clearTimeout(timeout);
-            applyChange(null);
-          }
-        };
-      }
-    } else {
-      // 3. 영상이 없는 슬롯
-      applyChange(null);
-    }
-  },
-
   stopPlayback() {
     window.isPlaying = false;
 
@@ -320,21 +330,6 @@ const APP_CORE = {
     if (window.APP_UI) {
       window.APP_UI.updatePlayBtnUI();
     }
-  },
-
-  getPlayableIndexes() {
-    const result = [];
-    for (let i = 0; i < this.TIMES.length; i++) {
-      if (
-        this.state.user1[i].videoURL ||
-        this.state.user1[i].text ||
-        this.state.user2[i].videoURL ||
-        this.state.user2[i].text
-      ) {
-        result.push(i);
-      }
-    }
-    return result;
   },
 
   renderAll() {
