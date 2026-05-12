@@ -167,6 +167,7 @@ button {
   border-radius: 10px;
   font-size: 16px;
   font-weight: normal;
+  color: white;
   cursor: pointer;
   transition: 0.25s;
 }
@@ -175,15 +176,19 @@ button {
 }
 .btn-blueviolet {
   background-color: blueviolet;
+  color: #fff;
 }
 .btn-white {
   background-color: white;
+  color: #222;
 }
 .btn-darkcyan {
   background-color: darkcyan;
+  color: #fff;
 }
 .btn-orange {
   background-color: orange;
+  color: #fff;
 }
 
 /* =========================
@@ -302,7 +307,6 @@ body section {
 
 .option {
   width: 100%;
-  max-width: 60%;
   align-items: stretch;
   flex-direction: row;
 }
@@ -317,11 +321,13 @@ body section {
   justify-content: space-between;
   align-items: center;
   flex-direction: row;
+  flex: 1;
 }
 .option .label-text {
   color: var(--color-lightGrey);
   word-break: keep-all;
-  width: 100%;
+  width: -moz-fit-content;
+  width: fit-content;
 }
 .option .label-text span {
   cursor: pointer;
@@ -373,6 +379,16 @@ body section {
 }
 .option--title input:focus {
   border-color: var(--input-focus);
+}
+.option--save {
+  flex: 1.5 !important;
+}
+.option--save .save--btns {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  gap: 10px;
 }
 
 /* =========================
@@ -853,16 +869,13 @@ body section {
   .Timeline {
     grid-template-columns: repeat(4, 1fr);
   }
-  .option {
-    max-width: 80%;
-  }
 }
 @media (max-width: 1200px) {
   .Timeline {
     grid-template-columns: repeat(3, 1fr);
   }
   .option {
-    max-width: 100%;
+    flex-direction: column;
   }
 }
 @media (max-width: 1024px) {
@@ -874,6 +887,9 @@ body section {
     height: auto;
     min-height: auto;
   }
+  .Timeline {
+    grid-template-columns: repeat(4, 1fr);
+  }
   #setting {
     width: 100%;
   }
@@ -884,10 +900,13 @@ body section {
   #visual {
     position: initial;
   }
+  .option {
+    flex-direction: row;
+  }
 }
 @media (max-width: 900px) {
-  .Timeline {
-    grid-template-columns: repeat(4, 1fr);
+  .option {
+    flex-direction: column;
   }
 }
 @media (max-width: 900px) and (orientation: landscape) {
@@ -954,9 +973,6 @@ body section {
   }
   .btn-upload {
     width: 100%;
-  }
-  .option {
-    flex-direction: column;
   }
 }
 /* =========================

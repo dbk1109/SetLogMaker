@@ -84,6 +84,7 @@ $colors: (
   border-radius: 10px;
   font-size: 16px;
   font-weight: normal;
+  color: white;
   cursor: pointer;
   transition: 0.25s;
   &:hover {
@@ -92,7 +93,7 @@ $colors: (
   @each $name, $color in $colors {
     &-#{$name} {
       background-color: $color;
-      //color: if(lightness($color) < 50%, #fff, #222);
+      color: if(lightness($color) < 60%, #fff, #222);
     }
   }
 }
@@ -223,7 +224,6 @@ body {
 }
 .option  {
   width: 100%;
-  max-width: 60%;
   align-items: stretch;
   flex-direction: row;
 
@@ -235,12 +235,13 @@ body {
     border: 1px solid var(--border);
     box-shadow: var(--shadow-card);
     @include flex-set(space-between, center);
+    flex: 1;
   }
 
   .label-text {
     color: var(--color-lightGrey);
     word-break: keep-all;
-    width: 100%;
+    width: fit-content;
     span {cursor: pointer;}
   }
 
@@ -291,6 +292,13 @@ body {
       &:focus {
         border-color: var(--input-focus);
       }
+    }
+  }
+  &--save {
+    flex: 1.5 !important;
+    .save--btns {
+      @include flex-set;
+      gap: 10px;
     }
   }
 
@@ -838,9 +846,6 @@ body {
   .Timeline {
     grid-template-columns: repeat(4, 1fr);
   }
-  .option {
-    max-width: 80%;
-  }
 }
 
 @media (max-width: 1200px) {
@@ -848,7 +853,7 @@ body {
     grid-template-columns: repeat(3, 1fr);
   }
   .option {
-    max-width: 100%;
+    flex-direction: column;
   }
 }
 
@@ -862,11 +867,12 @@ body {
       min-height: auto;
     }
   }
-
+  .Timeline {
+    grid-template-columns: repeat(4, 1fr);
+  }
   #setting {
     width: 100%;
   }
-
   #fullscreenWrap {
     width: min(420px, 100%);
 
@@ -875,11 +881,14 @@ body {
   #visual {
     position: initial;
   }
+  .option {
+    flex-direction: row;
+  }
 }
 
 @media (max-width: 900px) {
-  .Timeline {
-    grid-template-columns: repeat(4, 1fr);
+  .option {
+    flex-direction: column;
   }
 }
 
@@ -962,9 +971,6 @@ body {
 
   .btn-upload {
     width: 100%;
-  }
-  .option {
-    flex-direction: column;
   }
 }
 

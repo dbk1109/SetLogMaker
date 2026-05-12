@@ -32,7 +32,59 @@ const APP_CORE = {
     window.isSortLocked = window.innerWidth <= 768;
     this.initData("user1");
     this.initData("user2");
+    if (window.APP_UI) window.APP_UI.loadFromLocalStorage();
     this.renderAll();
+  },
+
+  // 데이터를 로컬 저장소용 객체로 변환
+  getStorageData() {
+    return {
+      user1: this.state.user1.map((item) => ({
+        text: item.text,
+        videoURL: item.videoURL,
+      })),
+      user2: this.state.user2.map((item) => ({
+        text: item.text,
+        videoURL: item.videoURL,
+      })),
+      is24h: this.state.is24h,
+      title: document.querySelector("#titleTextChange")?.value || "",
+    };
+  },
+
+  // 저장된 데이터를 state에 주입
+  applyStorageData(data) {
+    if (!data) return;
+    if (data.is24h !== undefined) this.state.is24h = data.is24h;
+
+    // 텍스트와 영상 URL 복구
+    ["user1", "user2"].forEach((user) => {
+      if (data[user]) {
+        data[user].forEach((savedItem, i) => {
+          if (this.state[user][i]) {
+            this.state[user][i].text = savedItem.text || "";
+            this.state[user][i].videoURL = savedItem.videoURL || "";
+          }
+        });
+      }
+    });
+  },
+
+  // 저장 데이터 지우기
+  clearAllData() {
+    ["user1", "user2"].forEach((user) => {
+      this.state[user].forEach((slot) => {
+        // 영상 메모리 해제
+        if (slot.videoURL) URL.revokeObjectURL(slot.videoURL);
+        slot.text = "";
+        slot.videoURL = "";
+      });
+    });
+    // 타이틀 초기화 (선택 사항)
+    const titleInput = document.querySelector("#titleTextChange");
+    if (titleInput) titleInput.value = "";
+
+    this.renderAll(); // 화면 갱신
   },
 
   getTimeLabel(index) {
@@ -184,7 +236,7 @@ const APP_CORE = {
       applyAll(null);
     }
   },
-  
+
   clearOldVideos(container, exceptVideo = null) {
     container.querySelectorAll("video").forEach((v) => {
       if (v === exceptVideo) return;

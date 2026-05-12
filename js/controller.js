@@ -211,17 +211,84 @@ const APP_UI = {
     });
   },
 
+  // [추가] 로컬 저장소에 현재 상태 저장
+  saveToLocalStorage() {
+    const data = window.APP_CORE.getStorageData();
+    localStorage.setItem("APP_SAVE_DATA", JSON.stringify(data));
+    console.log("저장 완료");
+  },
+
+  // [추가] 로컬 저장소에서 데이터 불러오기
+  loadFromLocalStorage() {
+    const saved = localStorage.getItem("APP_SAVE_DATA");
+    if (!saved) return;
+
+    try {
+      const data = JSON.parse(saved);
+      window.APP_CORE.applyStorageData(data);
+
+      // 타이틀 input 및 실제 텍스트 복구
+      const titleInput = document.querySelector("#titleTextChange");
+      const titleDisplay = document.querySelector(".title--text p");
+      if (titleInput && data.title) {
+        titleInput.value = data.title;
+        if (titleDisplay) titleDisplay.textContent = data.title;
+      }
+
+      // 시간제 토글 버튼 상태 복구
+      const timeToggle = document.querySelector("#timeFormatToggle");
+      if (timeToggle) timeToggle.checked = data.is24h;
+    } catch (e) {
+      console.error("데이터 복구 실패", e);
+    }
+  },
+
   bindSettingEvents() {
-    // 1. 시간제 변경 토글 이벤트 (추가)
+    // 시간제 변경 토글 이벤트
     const timeToggle = document.querySelector("#timeFormatToggle");
     timeToggle?.addEventListener("change", (e) => {
       window.APP_CORE.state.is24h = e.target.checked;
       window.APP_CORE.renderAll(); // 전체 다시 렌더링하여 시간 텍스트 교체
+      this.saveToLocalStorage(); //저장
+    });
+
+    // 타이틀 변경
+    const titleInput = document.querySelector("#titleTextChange");
+    titleInput?.addEventListener("input", (e) => {
+      let value = e.target.value;
+
+      // 점수 계산 로직 조정
+      let totalScore = 0;
+      let limitIndex = 0;
+
+      for (let i = 0; i < value.length; i++) {
+        // 한글은 2점, 영문/숫자/공백은 1.1점 (영문이 너무 길어지지 않게 조정)
+        const isKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(value[i]);
+        totalScore += isKorean ? 2 : 1.1;
+
+        // 총점 16점 제한 (한글 8자 = 16점 / 영문 약 14자 = 15.4점)
+        if (totalScore <= 16) {
+          limitIndex = i + 1;
+        } else {
+          break;
+        }
+      }
+
+      // 점수 초과 시 자르기
+      if (totalScore > 16) {
+        value = value.substring(0, limitIndex);
+        e.target.value = value;
+      }
+
+      const targetTitle = document.querySelector(".title--text p");
+      if (targetTitle) {
+        targetTitle.textContent = value || "💚💜";
+      }
     });
 
     // 텍스트 실시간 반영 (수정 및 최적화)
     document.addEventListener("input", (e) => {
-      if (e.target.classList.contains("slot-text")) {
+      if (e.target.classList.contains("slot-text") || e.target.id === "titleTextChange") {
         const settingUser = e.target.closest(".SettingUser");
         if (!settingUser) return;
 
@@ -306,37 +373,36 @@ const APP_UI = {
       }
     });
 
-    // 타이틀 변경
-    const titleInput = document.querySelector("#titleTextChange");
-    titleInput?.addEventListener("input", (e) => {
-      let value = e.target.value;
+    // 수동 저장
+    const saveBtn = document.querySelector("#saveDataBtn");
+    saveBtn?.addEventListener("click", () => {
+      // 1. 실제 데이터 저장 실행
+      this.saveToLocalStorage();
 
-      // 점수 계산 로직 조정
-      let totalScore = 0;
-      let limitIndex = 0;
+      // 2. 버튼 시각 피드백 (성공 알림)
+      const originalHTML = saveBtn.innerHTML;
+      saveBtn.classList.add("success");
+      saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>저장 완료!</span>`;
 
-      for (let i = 0; i < value.length; i++) {
-        // 한글은 2점, 영문/숫자/공백은 1.1점 (영문이 너무 길어지지 않게 조정)
-        const isKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(value[i]);
-        totalScore += isKorean ? 2 : 1.1;
+      // 3. 1.5초 후 버튼 원래대로 복구
+      setTimeout(() => {
+        saveBtn.classList.remove("success");
+        saveBtn.innerHTML = originalHTML;
+      }, 1000);
+    });
+    
+    // 전체 삭제 기능
+    const clearBtn = document.querySelector("#clearAllBtn");
+    clearBtn?.addEventListener("click", () => {
+      if (confirm("모든 텍스트와 설정이 초기화됩니다. 정말 삭제하시겠습니까?")) {
+        // 1. 메모리상의 데이터 초기화
+        window.APP_CORE.clearAllData();
 
-        // 총점 16점 제한 (한글 8자 = 16점 / 영문 약 14자 = 15.4점)
-        if (totalScore <= 16) {
-          limitIndex = i + 1;
-        } else {
-          break;
-        }
-      }
+        // 2. 로컬스토리지에 저장된 데이터 영구 삭제
+        localStorage.removeItem("APP_SAVE_DATA");
 
-      // 점수 초과 시 자르기
-      if (totalScore > 16) {
-        value = value.substring(0, limitIndex);
-        e.target.value = value;
-      }
-
-      const targetTitle = document.querySelector(".title--text p");
-      if (targetTitle) {
-        targetTitle.textContent = value || "💚💜";
+        // 3. 사용자 피드백
+        alert("모든 데이터가 삭제되었습니다.");
       }
     });
   },
