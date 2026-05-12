@@ -39,16 +39,14 @@ const APP_CORE = {
   // 데이터를 로컬 저장소용 객체로 변환
   getStorageData() {
     return {
-      user1: this.state.user1.map((item) => ({
-        text: item.text,
-        videoURL: item.videoURL,
-      })),
-      user2: this.state.user2.map((item) => ({
-        text: item.text,
-        videoURL: item.videoURL,
-      })),
+      user1: this.state.user1.map(item => ({ text: item.text, videoURL: "" })),
+      user2: this.state.user2.map(item => ({ text: item.text, videoURL: "" })),
       is24h: this.state.is24h,
       title: document.querySelector("#titleTextChange")?.value || "",
+      profiles: {
+        user1Name: document.querySelector('.SettingUser[data-user="user1"] .nickname-input')?.value || "",
+        user2Name: document.querySelector('.SettingUser[data-user="user2"] .nickname-input')?.value || "",
+      }
     };
   },
 
@@ -56,16 +54,31 @@ const APP_CORE = {
   applyStorageData(data) {
     if (!data) return;
     if (data.is24h !== undefined) this.state.is24h = data.is24h;
-
-    // 텍스트와 영상 URL 복구
-    ["user1", "user2"].forEach((user) => {
+    
+    ["user1", "user2"].forEach(user => {
+      // 1. 슬롯 텍스트 복구
       if (data[user]) {
         data[user].forEach((savedItem, i) => {
           if (this.state[user][i]) {
             this.state[user][i].text = savedItem.text || "";
-            this.state[user][i].videoURL = savedItem.videoURL || "";
+            this.state[user][i].videoURL = "";
           }
         });
+      }
+
+      // 2. 닉네임 UI 복구
+      if (data.profiles) {
+        const nameVal = data.profiles[`${user}Name` || ""];
+        
+        // 설정창 입력칸
+        const nameInput = document.querySelector(`.SettingUser[data-user="${user}"] .nickname-input`);
+        if (nameInput) nameInput.value = nameVal;
+
+        // 비주얼 영역 텍스트
+        const nameDisplay = document.querySelector(`#${user} .nickname`);
+        if (nameDisplay) {
+          nameDisplay.textContent = nameVal || (user === "user1" ? "user1" : "user2");
+        }
       }
     });
   },
@@ -78,14 +91,29 @@ const APP_CORE = {
         slot.text = "";
         slot.videoURL = "";
       });
+
+      // 닉네임 초기화
+      const userSection = document.querySelector(`.SettingUser[data-user="${user}"]`);
+      const visualSection = document.querySelector(`#${user}`);
+      
+      if (userSection) {
+        userSection.querySelector(".nickname-input").value = "";
+        const label = userSection.querySelector(".profile-upload");
+        label.style.backgroundImage = "";
+        label.innerHTML = `+ <br> 프로필`;
+      }
+      if (visualSection) {
+        visualSection.querySelector(".nickname").textContent = user;
+        visualSection.querySelector(".Videos--users__profile img").src = "./image/profile.webp";
+      }
     });
-    // 타이틀 초기화 (선택 사항)
+
     const titleInput = document.querySelector("#titleTextChange");
     const titleDisplay = document.querySelector(".title--text p");
     if (titleInput) titleInput.value = "";
     if (titleDisplay) titleDisplay.textContent = "💚💜";
 
-    this.renderAll(); // 화면 갱신
+    this.renderAll();
   },
 
   getTimeLabel(index) {

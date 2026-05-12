@@ -213,31 +213,40 @@ const APP_UI = {
 
   // [추가] 로컬 저장소에 현재 상태 저장
   saveToLocalStorage() {
-    const data = window.APP_CORE.getStorageData();
-    localStorage.setItem("APP_SAVE_DATA", JSON.stringify(data));
-    console.log("저장 완료");
+    try {
+      const data = window.APP_CORE.getStorageData();
+      localStorage.setItem("APP_SAVE_DATA", JSON.stringify(data));
+      console.log("저장되었습니다.");
+    } catch (e) {
+      alert("저장 공간이 부족하거나 보안 설정으로 인해 저장할 수 없습니다.");
+    }
   },
 
-  // [추가] 로컬 저장소에서 데이터 불러오기
+  // 로컬 저장소에서 데이터 불러오기
   loadFromLocalStorage() {
     const saved = localStorage.getItem("APP_SAVE_DATA");
     if (!saved) return;
 
     try {
       const data = JSON.parse(saved);
+      
+      // 1. 데이터(텍스트/닉네임) 적용
       window.APP_CORE.applyStorageData(data);
 
-      // 타이틀 input 및 실제 텍스트 복구
+      // 2. [중요] 복구된 데이터를 기반으로 타임라인/비주얼 화면 전체 갱신
+      window.APP_CORE.renderAll();
+
+      // 3. 기타 상단 타이틀 및 시간 설정 UI 복구
       const titleInput = document.querySelector("#titleTextChange");
-      const titleDisplay = document.querySelector(".title--text p");
       if (titleInput && data.title) {
         titleInput.value = data.title;
+        const titleDisplay = document.querySelector(".title--text p");
         if (titleDisplay) titleDisplay.textContent = data.title;
       }
 
-      // 시간제 토글 버튼 상태 복구
       const timeToggle = document.querySelector("#timeFormatToggle");
       if (timeToggle) timeToggle.checked = data.is24h;
+
     } catch (e) {
       console.error("데이터 복구 실패", e);
     }
@@ -288,7 +297,10 @@ const APP_UI = {
 
     // 텍스트 실시간 반영 (수정 및 최적화)
     document.addEventListener("input", (e) => {
-      if (e.target.classList.contains("slot-text") || e.target.id === "titleTextChange") {
+      if (
+        e.target.classList.contains("slot-text") ||
+        e.target.id === "titleTextChange"
+      ) {
         const settingUser = e.target.closest(".SettingUser");
         if (!settingUser) return;
 
@@ -384,17 +396,19 @@ const APP_UI = {
       saveBtn.classList.add("success");
       saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>저장 완료!</span>`;
 
-      // 3. 1.5초 후 버튼 원래대로 복구
+      // 3. 1초 후 버튼 원래대로 복구
       setTimeout(() => {
         saveBtn.classList.remove("success");
         saveBtn.innerHTML = originalHTML;
       }, 1000);
     });
-    
+
     // 전체 삭제 기능
     const clearBtn = document.querySelector("#clearAllBtn");
     clearBtn?.addEventListener("click", () => {
-      if (confirm("모든 텍스트와 설정이 초기화됩니다. 정말 삭제하시겠습니까?")) {
+      if (
+        confirm("모든 텍스트와 설정이 초기화됩니다. 정말 삭제하시겠습니까?")
+      ) {
         // 1. 메모리상의 데이터 초기화
         window.APP_CORE.clearAllData();
 
