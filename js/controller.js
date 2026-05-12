@@ -162,7 +162,6 @@ const APP_UI = {
     }
   },
 
-  // controller.js 내 APP_UI 객체 내부
   initDots(playableIndexes) {
     const container = document.querySelector(".Menu--dots");
     if (!container) return;
@@ -307,6 +306,40 @@ const APP_UI = {
         target.videoURL = "";
         window.APP_CORE.renderTimeline(user);
         window.APP_CORE.syncVisual(user, 0);
+      }
+    });
+
+    // 타이틀 변경
+    const titleInput = document.querySelector("#titleTextChange");
+    titleInput?.addEventListener("input", (e) => {
+      let value = e.target.value;
+
+      // 점수 계산 로직 조정
+      let totalScore = 0;
+      let limitIndex = 0;
+
+      for (let i = 0; i < value.length; i++) {
+        // 한글은 2점, 영문/숫자/공백은 1.1점 (영문이 너무 길어지지 않게 조정)
+        const isKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(value[i]);
+        totalScore += isKorean ? 2 : 1.1;
+
+        // 총점 16점 제한 (한글 8자 = 16점 / 영문 약 14자 = 15.4점)
+        if (totalScore <= 16) {
+          limitIndex = i + 1;
+        } else {
+          break;
+        }
+      }
+
+      // 점수 초과 시 자르기
+      if (totalScore > 16) {
+        value = value.substring(0, limitIndex);
+        e.target.value = value;
+      }
+
+      const targetTitle = document.querySelector(".title--text p");
+      if (targetTitle) {
+        targetTitle.textContent = value || "💚💜";
       }
     });
   },
