@@ -14,18 +14,22 @@
 
     <div class="TITLE">
       <h1>︵‿˚̣̣̣͙⋆⁺𝐦𝐰 𝐬𝐞𝐭 𝐥𝐨𝐠 𝐦𝐚𝐤𝐞𝐫⋆₊˚̣̣̣͙‿︵</h1>
-      <p>v2.10.1</p>
+      <p>v2.10.3</p>
     </div>
     <div class="SettingWrap">
 
-      <div class="SettingUser">
+      <div class="SettingUser SettingOption">
         <h2>환경 설정</h2>
         <div class="SettingWrap">
           <label class="time-option">
             <input type="checkbox" id="timeFormatToggle">
             <span class="slider"></span>
-            <span class="label-text">24시간제로 보기</span>
+            <span class="label-text">24시간제로 보기 (24:00)</span>
           </label>
+          <!--<label class="title-option">
+            <input type="text" name="titleText" id="titleTextChange">
+            <span class="label-text">로그방 이름 바꾸기</span>
+          </label>-->
         </div>
       </div>
 
@@ -40,7 +44,7 @@
           
           <input type="text" class="nickname-input" placeholder="닉네임 입력" />
           
-          <label for="video-user1" class="btn btn-upload btn-blueviolet"> 영상 추가 </label>
+          <label for="video-user1" class="btn btn-upload btn-blueviolet"> 영상 한번에 추가 </label>
           <input type="file" id="video-user1" class="video-input" accept="video/*" multiple hidden />
         </div>
         <div class="Timeline" id="timeline-user1"></div>
@@ -55,7 +59,7 @@
           </label>
           <input type="file" id="profile-user2" class="profile-input" accept="image/*" hidden />
           <input type="text" class="nickname-input" placeholder="닉네임 입력" />
-          <label for="video-user2" class="btn btn-upload btn-blueviolet"> 영상 추가 </label>
+          <label for="video-user2" class="btn btn-upload btn-blueviolet"> 영상 한번에 추가 </label>
           <input type="file" id="video-user2" class="video-input" accept="video/*" multiple hidden />
         </div>
         <div class="Timeline" id="timeline-user2"></div>
@@ -66,7 +70,6 @@
   </section>
 
   <section id="fullscreenWrap">
-    <!--<img src="/image/sample.jpeg" alt="">-->
     <div id="visual">
 
       <div class="Menu">
@@ -153,21 +156,21 @@
     
     <div class="controller">
 
-      <button id="floatingMenuBtn" class="floating-menu-btn">
+      <button id="floatingMenuBtn" class="btn btn-floating-menu">
         <i class="fa-solid fa-ellipsis"></i>
       </button>
       
       <div id="floatingDrawer" class="floating-drawer">
       
-        <button id="playAll" class="drawer-btn">
+        <button id="playAll" class="btn btn-drawer">
           <i class="fa-solid fa-play"></i>
         </button>
       
-        <button id="fullscreenBtn" class="drawer-btn">
+        <button id="fullscreenBtn" class="btn btn-drawer">
           <i class="fa-solid fa-expand"></i>
         </button>
       
-        <button id="toggleSort" class="drawer-btn">
+        <button id="toggleSort" class="btn btn-drawer">
           <i class="fa-solid fa-lock-open"></i>
         </button>
       

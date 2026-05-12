@@ -144,7 +144,7 @@ const APP_UI = {
     const isLocked = window.isSortLocked;
 
     // 버튼 스타일
-    this.sortBtn.className = `drawer-btn ${isLocked ? "is-locked" : "is-unlocked"}`;
+    this.sortBtn.className = `btn btn-drawer ${isLocked ? "is-locked" : "is-unlocked"}`;
     this.sortBtn.innerHTML = isLocked
       ? `<i class="fa-solid fa-lock"></i> <span>잠금됨</span>`
       : `<i class="fa-solid fa-lock-open"></i> <span>이동 가능</span>`;
