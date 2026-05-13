@@ -229,7 +229,7 @@ const APP_UI = {
 
     try {
       const data = JSON.parse(saved);
-      
+
       // 1. 데이터(텍스트/닉네임) 적용
       window.APP_CORE.applyStorageData(data);
 
@@ -246,7 +246,6 @@ const APP_UI = {
 
       const timeToggle = document.querySelector("#timeFormatToggle");
       if (timeToggle) timeToggle.checked = data.is24h;
-
     } catch (e) {
       console.error("데이터 복구 실패", e);
     }
@@ -422,15 +421,20 @@ const APP_UI = {
   },
 
   performVideoExchange(newVideo, backElement) {
-    newVideo.style.zIndex = "10";
-    newVideo.style.opacity = "0.9";
-    newVideo.play();
-    delete newVideo.dataset.preload;
+    const playPromise = newVideo.play();
+    newVideo.classList.add("active");
+
+    if (playPromise !== undefined) {
+      playPromise.catch((e) => {
+        console.log("재생 실패", e);
+      });
+    }
 
     // 이전 영상들 지연 삭제 (깜빡임 방지)
     setTimeout(() => {
       backElement.querySelectorAll("video").forEach((v) => {
         if (v !== newVideo) {
+          v.classList.remove("active");
           v.pause();
           v.src = "";
           v.remove();
@@ -465,31 +469,16 @@ const APP_UI = {
     nextVideo.onloadeddata = () => {
       nextVideo.dataset.ready = "true";
     };
-    nextVideo.play().catch((e) => console.log("자동재생 방지 대응"));
-
-    // play() 호출 시 에러가 나도 스크립트가 죽지 않도록 방어
-    const playPromise = nextVideo.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((error) => {
-        console.error("Playback failed:", error);
-        // 재생 실패 시에도 ready 상태는 업데이트해서 syncVisual이 판단하게 함
-        nextVideo.dataset.ready = "error";
-      });
-    }
-
-    // iOS 보정 및 초기 스타일 (투명하게 대기)
-    Object.assign(nextVideo.style, {
-      position: "absolute",
-      inset: "0",
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      opacity: "0",
-      zIndex: "5",
-      transition: "opacity 0.05s ease-in-out",
-    });
-
+    nextVideo.onerror = () => {
+      // src 제거 / video cleanup 과정은 무시
+      if (nextVideo.networkState === 3 || nextVideo.error?.code === 1) {
+        return;
+      }
+      console.warn("영상 로드 실패", nextVideo.error);
+      nextVideo.dataset.ready = "error";
+    };
     back.appendChild(nextVideo);
+    nextVideo.load();
   },
 };
 

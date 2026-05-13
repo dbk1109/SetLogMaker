@@ -529,8 +529,8 @@ body section {
   z-index: 1;
 }
 .Videos--users__back video.active {
+  opacity: 1;
   z-index: 10;
-  opacity: 0.9;
 }
 .Videos--users__profile {
   display: flex;

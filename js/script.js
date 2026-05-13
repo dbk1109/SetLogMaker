@@ -26,6 +26,7 @@ const APP_CORE = {
     "03:00",
   ],
   state: { user1: [], user2: [], is24h: false },
+  EMPTY_VIDEO: "./assets/black.mp4",
 
   init() {
     window.isPlaying = false;
@@ -39,14 +40,14 @@ const APP_CORE = {
   // 데이터를 로컬 저장소용 객체로 변환
   getStorageData() {
     // 저장 직전, 현재 화면에 입력된 텍스트들을 state에 강제 동기화 (누락 방지)
-    ["user1", "user2"].forEach(user => {
+    ["user1", "user2"].forEach((user) => {
       const container = document.querySelector(`#timeline-${user}`);
       if (container) {
         const textareas = container.querySelectorAll(".slot-text");
         textareas.forEach((area, i) => {
           if (this.state[user][i]) {
             // 화면에 입력된 textarea의 실제 값을 state에 넣음
-            this.state[user][i].text = area.value; 
+            this.state[user][i].text = area.value;
           }
         });
       }
@@ -54,14 +55,26 @@ const APP_CORE = {
 
     return {
       // videoURL은 무조건 빈 값으로 저장하여 용량 최적화 및 엑박 방지
-      user1: this.state.user1.map(item => ({ text: item.text, videoURL: "" })),
-      user2: this.state.user2.map(item => ({ text: item.text, videoURL: "" })),
+      user1: this.state.user1.map((item) => ({
+        text: item.text,
+        videoURL: "",
+      })),
+      user2: this.state.user2.map((item) => ({
+        text: item.text,
+        videoURL: "",
+      })),
       is24h: this.state.is24h,
       title: document.querySelector("#titleTextChange")?.value || "",
       profiles: {
-        user1Name: document.querySelector('.SettingUser[data-user="user1"] .nickname-input')?.value || "",
-        user2Name: document.querySelector('.SettingUser[data-user="user2"] .nickname-input')?.value || "",
-      }
+        user1Name:
+          document.querySelector(
+            '.SettingUser[data-user="user1"] .nickname-input',
+          )?.value || "",
+        user2Name:
+          document.querySelector(
+            '.SettingUser[data-user="user2"] .nickname-input',
+          )?.value || "",
+      },
     };
   },
 
@@ -69,14 +82,14 @@ const APP_CORE = {
   applyStorageData(data) {
     if (!data) return;
     if (data.is24h !== undefined) this.state.is24h = data.is24h;
-    
-    ["user1", "user2"].forEach(user => {
+
+    ["user1", "user2"].forEach((user) => {
       // 1. 슬롯 텍스트 복구 (영상 주소는 무시)
       if (data[user]) {
         data[user].forEach((savedItem, i) => {
           if (this.state[user][i]) {
             this.state[user][i].text = savedItem.text || "";
-            this.state[user][i].videoURL = ""; // 영상 경로는 비움
+            this.state[user][i].videoURL = this.EMPTY_VIDEO;
           }
         });
       }
@@ -84,13 +97,16 @@ const APP_CORE = {
       // 2. 닉네임 UI 즉시 반영 (비주얼 영역 포함)
       if (data.profiles) {
         const nameVal = data.profiles[`${user}Name`] || "";
-        
-        const nameInput = document.querySelector(`.SettingUser[data-user="${user}"] .nickname-input`);
+
+        const nameInput = document.querySelector(
+          `.SettingUser[data-user="${user}"] .nickname-input`,
+        );
         if (nameInput) nameInput.value = nameVal;
 
         const nameDisplay = document.querySelector(`#${user} .nickname`);
         if (nameDisplay) {
-          nameDisplay.textContent = nameVal || (user === "user1" ? "user1" : "user2");
+          nameDisplay.textContent =
+            nameVal || (user === "user1" ? "user1" : "user2");
         }
       }
     });
@@ -102,13 +118,15 @@ const APP_CORE = {
       this.state[user].forEach((slot) => {
         if (slot.videoURL) URL.revokeObjectURL(slot.videoURL);
         slot.text = "";
-        slot.videoURL = "";
+        slot.videoURL = this.EMPTY_VIDEO;
       });
 
       // 닉네임 초기화
-      const userSection = document.querySelector(`.SettingUser[data-user="${user}"]`);
+      const userSection = document.querySelector(
+        `.SettingUser[data-user="${user}"]`,
+      );
       const visualSection = document.querySelector(`#${user}`);
-      
+
       if (userSection) {
         userSection.querySelector(".nickname-input").value = "";
         const label = userSection.querySelector(".profile-upload");
@@ -117,7 +135,8 @@ const APP_CORE = {
       }
       if (visualSection) {
         visualSection.querySelector(".nickname").textContent = user;
-        visualSection.querySelector(".Videos--users__profile img").src = "./assets/profile.webp";
+        visualSection.querySelector(".Videos--users__profile img").src =
+          "./assets/profile.webp";
       }
     });
 
@@ -144,11 +163,15 @@ const APP_CORE = {
     return `${displayHour}:${formattedMin}`;
   },
 
+  isEmptyVideo(url) {
+    return !url || url === this.EMPTY_VIDEO;
+  },
+
   initData(user) {
     this.state[user] = this.TIMES.map(() => ({
       id: crypto.randomUUID(),
       text: "",
-      videoURL: "",
+      videoURL: this.EMPTY_VIDEO,
     }));
   },
 
@@ -163,10 +186,10 @@ const APP_CORE = {
         <div class="Timeline--header">
           <span class="time-label">${this.getTimeLabel(i)}</span> <!-- 메서드 호출로 변경 -->
         </div>
-        <div class="thumb ${slot.videoURL ? "" : "empty"}">
+        <div class="thumb ${this.isEmptyVideo(slot.videoURL) ? "empty" : ""}">
           <video src="${slot.videoURL}" muted playsinline></video>
           ${
-            slot.videoURL
+            !this.isEmptyVideo(slot.videoURL)
               ? `
             <button class="delete-video-btn" data-user="${user}" data-id="${slot.id}">
               <i class="fa-solid fa-trash"></i>
@@ -219,7 +242,7 @@ const APP_CORE = {
   // 영상 미리 로드를 위한 메서드 (iOS 보정 버전)
   preloadNextVideo(user, index) {
     const slot = this.state[user][index];
-    if (!slot || !slot.videoURL) return;
+    if (!slot || this.isEmptyVideo(slot.videoURL)) return;
 
     const view = document.querySelector(`#${user}`);
     const back = view.querySelector(".Videos--users__back");
@@ -230,9 +253,10 @@ const APP_CORE = {
     window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
   },
 
-  syncVisual(user, index) {
+  async syncVisual(user, index) {
     const slot = this.state[user][index];
     const view = document.querySelector(`#${user}`);
+
     if (!view || !slot) return;
 
     const back = view.querySelector(".Videos--users__back");
@@ -241,40 +265,49 @@ const APP_CORE = {
 
     const applyAll = (v) => {
       timeEl.textContent = this.getTimeLabel(index);
-      textEl.textContent = slot.text || (slot.videoURL ? "" : "💤");
+
+      textEl.textContent =
+        slot.text || (this.isEmptyVideo(slot.videoURL) ? "💤" : "");
 
       if (v && window.APP_UI?.performVideoExchange) {
         window.APP_UI.performVideoExchange(v, back);
-      } else if (v) {
-        this.clearOldVideos(back, v);
-        v.style.opacity = "0.9";
-        v.play();
       } else {
         this.clearOldVideos(back);
       }
     };
 
-    if (slot.videoURL) {
-      let targetVideo = back.querySelector(`video[data-preload="${index}"]`);
+    // 비어있는 슬롯 처리
+    if (this.isEmptyVideo(slot.videoURL)) {
+      applyAll(null);
+      return;
+    }
 
-      if (targetVideo && targetVideo.dataset.ready === "true") {
-        applyAll(targetVideo);
-      } else {
-        if (!targetVideo) {
-          window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
-          targetVideo = back.querySelector(`video[data-preload="${index}"]`);
-        }
+    let targetVideo = back.querySelector(`video[data-preload="${index}"]`);
 
-        targetVideo.onloadeddata = () => {
-          targetVideo.dataset.ready = "true";
-          applyAll(targetVideo);
-        };
+    if (!targetVideo) {
+      window.APP_UI.createPreloadVideo(user, index, slot.videoURL);
 
-        setTimeout(() => {
-          if (targetVideo.dataset.ready !== "true") applyAll(null);
-        }, 500);
-      }
+      await new Promise((r) => setTimeout(r, 50));
+
+      targetVideo = back.querySelector(`video[data-preload="${index}"]`);
+    }
+
+    // 최대 1.2초 대기
+    const start = performance.now();
+
+    while (
+      targetVideo &&
+      targetVideo.readyState < 3 &&
+      performance.now() - start < 1200
+    ) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+
+    // 정상 로드 성공
+    if (targetVideo && targetVideo.readyState >= 3) {
+      applyAll(targetVideo);
     } else {
+      // 실패 시 black fallback
       applyAll(null);
     }
   },
@@ -296,9 +329,9 @@ const APP_CORE = {
     const result = [];
     for (let i = 0; i < this.TIMES.length; i++) {
       if (
-        this.state.user1[i].videoURL ||
+        !this.isEmptyVideo(this.state.user1[i].videoURL) ||
         this.state.user1[i].text ||
-        this.state.user2[i].videoURL ||
+        !this.isEmptyVideo(this.state.user2[i].videoURL) ||
         this.state.user2[i].text
       ) {
         result.push(i);
@@ -323,8 +356,11 @@ const APP_CORE = {
       const afterNextIndex = playable[i + 2];
 
       // 1. 현재 영상 교체 (이미 프리로드된 것을 사용)
-      this.syncVisual("user1", currentIndex);
-      this.syncVisual("user2", currentIndex);
+      await Promise.all([
+        this.syncVisual("user1", currentIndex),
+        this.syncVisual("user2", currentIndex),
+      ]);
+
       if (window.APP_UI) {
         window.APP_UI.updateDots(currentIndex, playable);
       }
