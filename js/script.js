@@ -304,11 +304,35 @@ const APP_CORE = {
     }
 
     // 정상 로드 성공
+    const swapAt = performance.now();
     if (targetVideo && targetVideo.readyState >= 3) {
+      while (performance.now() < swapAt + 16) {
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+
       applyAll(targetVideo);
     } else {
-      // 실패 시 black fallback
-      applyAll(null);
+      // 실패 영상은 즉시 이전 영상 제거
+      this.clearOldVideos(back);
+
+      // 텍스트/시간은 유지
+      timeEl.textContent = this.getTimeLabel(index);
+
+      textEl.textContent = slot.text || "💤";
+
+      // 실패 슬롯은 black 처리
+      const black = document.createElement("video");
+
+      black.src = this.EMPTY_VIDEO;
+      black.muted = true;
+      black.playsInline = true;
+      black.loop = true;
+      black.autoplay = true;
+      black.classList.add("active");
+
+      back.appendChild(black);
+
+      black.play().catch(() => {});
     }
   },
 

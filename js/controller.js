@@ -421,8 +421,13 @@ const APP_UI = {
   },
 
   performVideoExchange(newVideo, backElement) {
+    const oldVideos = Array.from(
+      backElement.querySelectorAll("video.active")
+    );
+
+    newVideo.style.visibility = "visible";
+
     const playPromise = newVideo.play();
-    newVideo.classList.add("active");
 
     if (playPromise !== undefined) {
       playPromise.catch((e) => {
@@ -430,19 +435,33 @@ const APP_UI = {
       });
     }
 
-    // 이전 영상들 지연 삭제 (깜빡임 방지)
-    setTimeout(() => {
-      backElement.querySelectorAll("video").forEach((v) => {
-        if (v !== newVideo) {
-          v.classList.remove("active");
-          v.pause();
-          v.src = "";
-          v.remove();
-        }
-      });
-    }, 500);
-  },
+    const activateNewVideo = () => {
+      newVideo.classList.add("active");
 
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          oldVideos.forEach((v) => {
+            if (v !== newVideo) {
+              v.classList.remove("active");
+              v.pause();
+              v.src = "";
+              v.remove();
+            }
+          });
+        });
+      });
+    };
+
+    // 첫 프레임 표시 보장
+    if ("requestVideoFrameCallback" in newVideo) {
+      newVideo.requestVideoFrameCallback(() => {
+        activateNewVideo();
+      });
+    } else {
+      // Safari fallback
+      setTimeout(activateNewVideo, 220);
+    }
+  },
   createPreloadVideo(user, index, url) {
     const view = document.querySelector(`#${user}`);
     const back = view.querySelector(".Videos--users__back");
@@ -452,10 +471,14 @@ const APP_UI = {
     nextVideo.preload = "auto";
     nextVideo.muted = true;
     nextVideo.playsInline = true;
-    nextVideo.loop = true;
     nextVideo.dataset.preload = index;
     nextVideo.dataset.ready = "false";
-
+    nextVideo.style.visibility = "hidden";
+    nextVideo.style.pointerEvents = "none";
+    
+    nextVideo.onended = () => {
+      nextVideo.pause();
+    };
     // [추가] 영상 길이에 맞춰 재생 속도 조절
     nextVideo.onloadedmetadata = () => {
       const duration = nextVideo.duration;
@@ -470,12 +493,23 @@ const APP_UI = {
       nextVideo.dataset.ready = "true";
     };
     nextVideo.onerror = () => {
-      // src 제거 / video cleanup 과정은 무시
+      // revoke / cleanup 무시
       if (nextVideo.networkState === 3 || nextVideo.error?.code === 1) {
         return;
       }
-      console.warn("영상 로드 실패", nextVideo.error);
+
+      console.warn("영상 로드 실패", url);
+
+      // state 자체를 black fallback으로 교체
+      const targetSlot = window.APP_CORE.state[user][index];
+
+      if (targetSlot) {
+        targetSlot.videoURL = window.APP_CORE.EMPTY_VIDEO;
+      }
+
       nextVideo.dataset.ready = "error";
+
+      nextVideo.remove();
     };
     back.appendChild(nextVideo);
     nextVideo.load();
