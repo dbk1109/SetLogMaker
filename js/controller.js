@@ -436,7 +436,7 @@ const APP_UI = {
           v.remove();
         }
       });
-    }, 100);
+    }, 500);
   },
 
   createPreloadVideo(user, index, url) {

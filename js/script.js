@@ -117,7 +117,7 @@ const APP_CORE = {
       }
       if (visualSection) {
         visualSection.querySelector(".nickname").textContent = user;
-        visualSection.querySelector(".Videos--users__profile img").src = "./image/profile.webp";
+        visualSection.querySelector(".Videos--users__profile img").src = "./assets/profile.webp";
       }
     });
 
@@ -272,7 +272,7 @@ const APP_CORE = {
 
         setTimeout(() => {
           if (targetVideo.dataset.ready !== "true") applyAll(null);
-        }, 100);
+        }, 500);
       }
     } else {
       applyAll(null);
