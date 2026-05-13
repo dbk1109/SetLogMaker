@@ -169,7 +169,7 @@ button {
   font-weight: normal;
   color: white;
   cursor: pointer;
-  transition: 0.25s;
+  transition: 0.2s;
 }
 .btn:hover {
   opacity: 0.8;
@@ -347,7 +347,7 @@ body section {
   background: #444;
   border-radius: 20px;
   position: relative;
-  transition: 0.3s;
+  transition: 0.2s;
 }
 .option--time .slider::after {
   content: "";
@@ -358,7 +358,7 @@ body section {
   height: 16px;
   background: white;
   border-radius: 50%;
-  transition: 0.3s;
+  transition: 0.2s;
 }
 .option--time input:checked + .slider {
   background: blueviolet;
@@ -525,6 +525,11 @@ body section {
   height: 100%;
   -o-object-fit: cover;
      object-fit: cover;
+  opacity: 0;
+  z-index: 1;
+}
+.Videos--users__back video.active {
+  z-index: 10;
   opacity: 0.9;
 }
 .Videos--users__profile {
@@ -657,6 +662,12 @@ body section {
   align-items: center;
   z-index: 10;
 }
+.thumb.empty video {
+  opacity: 0;
+}
+.thumb:not(.empty) video {
+  opacity: 1;
+}
 .thumb:hover .delete-video-btn {
   opacity: 1;
   pointer-events: auto;
@@ -780,7 +791,7 @@ body section {
   opacity: 0;
   pointer-events: none;
   transform: translateY(10px) scale(0.95);
-  transition: 0.25s;
+  transition: 0.2s;
 }
 .floating-drawer.active {
   opacity: 1;
