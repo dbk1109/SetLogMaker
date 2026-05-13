@@ -295,17 +295,40 @@ const APP_CORE = {
     // 최대 1.2초 대기
     const start = performance.now();
 
-    while (
-      targetVideo &&
-      targetVideo.readyState < 3 &&
-      performance.now() - start < 1200
-    ) {
-      await new Promise((r) => setTimeout(r, 50));
+    // 최대 대기 시간 축소
+    const MAX_WAIT = 220;
+
+    while (targetVideo) {
+      const elapsed = performance.now() - start;
+
+      const isReady =
+        targetVideo.readyState >= 4 && targetVideo.dataset.ready === "true";
+
+      const isError =
+        targetVideo.dataset.ready === "error";
+
+      // Safari / 모바일 stuck 대응
+      const isStuck =
+        elapsed > 180 &&
+        (
+          targetVideo.readyState === 1 ||
+          targetVideo.networkState === 2
+        );
+
+      if (isReady || isError || isStuck || elapsed > MAX_WAIT) {
+        break;
+      }
+
+      await new Promise((r) => setTimeout(r, 10));
     }
 
     // 정상 로드 성공
     const swapAt = performance.now();
-    if (targetVideo && targetVideo.readyState >= 3) {
+    if (
+      targetVideo &&
+      targetVideo.readyState >= 4 &&
+      targetVideo.dataset.ready === "true"
+    ) {
       while (performance.now() < swapAt + 16) {
         await new Promise((r) => requestAnimationFrame(r));
       }
@@ -320,6 +343,17 @@ const APP_CORE = {
 
       textEl.textContent = slot.text || "💤";
 
+      // 실패 영상 즉시 완전 제거
+      back.querySelectorAll("video").forEach((v) => {
+        v.pause();
+        v.removeAttribute("src");
+
+        try {
+          v.load();
+        } catch (e) {}
+
+        v.remove();
+      });
       // 실패 슬롯은 black 처리
       const black = document.createElement("video");
 
@@ -339,13 +373,16 @@ const APP_CORE = {
   clearOldVideos(container, exceptVideo = null) {
     container.querySelectorAll("video").forEach((v) => {
       if (v === exceptVideo) return;
-      v.style.opacity = "0";
-      setTimeout(() => {
-        v.pause();
-        v.src = "";
+
+      v.pause();
+
+      v.removeAttribute("src");
+
+      try {
         v.load();
-        v.remove();
-      }, 150);
+      } catch (e) {}
+
+      v.remove();
     });
   },
 

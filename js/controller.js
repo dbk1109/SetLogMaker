@@ -475,7 +475,7 @@ const APP_UI = {
     nextVideo.dataset.ready = "false";
     nextVideo.style.visibility = "hidden";
     nextVideo.style.pointerEvents = "none";
-    
+
     nextVideo.onended = () => {
       nextVideo.pause();
     };
@@ -489,7 +489,7 @@ const APP_UI = {
       }
     };
 
-    nextVideo.onloadeddata = () => {
+    nextVideo.oncanplay = () => {
       nextVideo.dataset.ready = "true";
     };
     nextVideo.onerror = () => {
@@ -509,6 +509,9 @@ const APP_UI = {
 
       nextVideo.dataset.ready = "error";
 
+      nextVideo.pause();
+      nextVideo.removeAttribute("src");
+      nextVideo.load();
       nextVideo.remove();
     };
     back.appendChild(nextVideo);
