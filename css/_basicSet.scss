@@ -1,3 +1,7 @@
+/* =========================
+   FONT
+========================= */
+
 * {
   font-family: 'NanumSquareNeo';
   box-sizing: border-box;
@@ -5,10 +9,6 @@
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Black Han Sans' , sans-serif;
 }
-
-/* =========================
-   FONT
-========================= */
 
 @font-face {
   font-family: 'NanumSquareNeo';
@@ -82,9 +82,7 @@ h1, h2, h3, h4, h5, h6 {
   font-display: swap;
 }
 
-
 @import url('https://fonts.googleapis.com/css?family=Black+Han+Sans:400');
-
 
 /* =========================
    RESET
@@ -92,12 +90,372 @@ h1, h2, h3, h4, h5, h6 {
 
 html,body{width:100%;min-height:100%;padding:0;margin:0;}
 h1,h2,h3,h4,h5,h6,p{margin:0;}
-textarea,input{border:unset;resize:none;border-radius:5px;}
+textarea,input{border:unset;resize:none;border-radius:5px;min-height: 40px;padding: 8px;}
 button{padding:0;border:none;border-radius:0;background:inherit;box-shadow:none;overflow:visible;cursor:pointer;}
 
+/* =========================
+   ROOT
+========================= */
 
-.version {
-  position: absolute;
-  top: 0;
+:root {
+  --color-lightGrey: #f5f5f5;
+  --color-black: #1C1C1E;
+  --color-fontLightGrey: #d4d4d4;
+  --color-btn-color: rgba(183, 43, 226, 0.8);
+  --line: 1px dashed blueviolet;
+
+  /* TEXT */
+  --text-primary: #F5F7FA;
+  --text-secondary: #A3A8B3;
+  --text-muted: #6F7785;
+
+  /* BASE */
+  --border: #474e59;
+  --border-soft: #232831;
+  --bg: #0F1115;
+
+  /* PRIMARY */
+  --primary: #6C5CE7;
+  --primary-hover: #7B6EF6;
+  --primary-active: #5A4BD1;
+
+  /* STATE */
+  --success: #3CCB7F;
+  --warning: #FFB547;
+  --danger: #FF5D73;
+
+  /* INPUT / TOGGLE */
+  --input-bg: #f9f9f9;
+  --input-border: #303744;
+  --input-focus: #6C5CE7;
+  --toggle-off: #3A404C;
+  --toggle-on: #6C5CE7;
+
+  /* SHADOW */
+  --shadow-soft: 0 4px 12px rgba(0,0,0,.25);
+  --shadow-card: 0 8px 24px rgba(0,0,0,.32);
+
+ /* GLASS EFFECT */
+  --glass-bg: rgba(255,255,255,0.03);
+  --glass-border: rgba(255,255,255,0.06);
+}
+
+/* =========================
+   VARIABLES
+========================= */
+
+$visualWidth: 420px;
+
+$colors: (
+  "blueviolet": blueviolet,
+  "white": white,
+  "darkcyan": darkcyan,
+  "orange": orange
+);
+
+/* =========================
+   BUTTON
+========================= */
+
+.btn {
+  padding: 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: normal;
   color: white;
+  cursor: pointer;
+  opacity: 1;
+  transition: 0.2s;
+  &:hover {
+    opacity: 0.8;
+  }
+  @each $name, $color in $colors {
+    &-#{$name} {
+      background-color: $color;
+      color: if(lightness($color) < 60%, #fff, #222);
+    }
+  }
+}
+
+/* =========================
+   MIXIN
+========================= */
+
+@mixin flex-set( $justify: center, $align: center, $direction: row ) {
+  display: flex;
+  justify-content: $justify;
+  align-items: $align;
+  flex-direction: $direction;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+
+body {
+  @include flex-set(space-between, flex-start);
+
+  position: relative;
+ 
+  gap: 30px;
+  padding: 30px;
+
+  background: var(--bg);
+  color: var(--text-primary);
+ 
+  section {
+    min-width: 0;
+  }
+}
+
+#setting, #leftWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0; 
+  height: auto;
+}
+
+#fullscreenWrap {
+  @include flex-set;
+
+  flex-shrink: 0;
+
+  width: $visualWidth;
+  min-width: 0;
+
+  &:fullscreen {
+    width: 100vw;
+    height: 100vh;
+
+    @include flex-set;
+
+    background: #111;
+
+    #visual {
+      width: $visualWidth;
+      max-width: 100dvw;
+      height: 80dvh;
+
+      transform: scale(1.2);
+      position: initial;
+    }
+  }
+}
+ 
+#visual {
+  @include flex-set(space-between, stretch, column);
+
+  width: auto;
+  max-width: $visualWidth;
+  aspect-ratio: 8 / 16;
+  height: 93dvh;
+
+  padding-top: calc(24px + env(safe-area-inset-top));
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  padding-left: 10px;
+  padding-right: 10px;
+
+  overflow: hidden;
+
+  border: 5px solid blueviolet;
+  border-radius: 46px;
+
+  background: white;
+
+  position: fixed;
+  top: 30px;
+}
+
+
+/* =========================
+   MENU
+========================= */
+
+.Menu {
+  display: flex;
+  flex-direction: column;
+
+  &--title {
+    $size: 42px;
+    position: relative;
+    @include flex-set(space-between);
+
+    min-height: $size;
+    padding: 0 6px;
+
+    > div {
+      @include flex-set;
+      color: #000;
+
+      > * {
+        @include flex-set;
+        height: $size;
+        border-radius: 40px;
+        background: var(--color-lightGrey);
+      }
+    }
+
+    &__left,
+    &__right {
+      gap: 4px;
+
+      flex-shrink: 0;
+
+      i {
+        width: $size;
+      }
+    }
+
+    &__middle {
+      position: absolute;
+      width: 100%;
+      flex: 1;
+      .title--text {
+        justify-content: flex-end;
+        max-width: 180px;
+        gap: 6px;
+        padding: 0 20px;
+        font-size: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: pre;
+      }
+    }
+  }
+
+  &--dots {
+    &-wrapper {
+      // (10px * 10개) + (6px * 9개) = 154px
+      width: 148px; 
+      height: 20px; // outline 등 여유 공간
+      overflow: hidden; 
+      margin: 14px auto;
+      position: relative;
+    }
+    $dotSize: 10px;
+    $dotGap: 6px;
+
+    @include flex-set(flex-start);
+
+    width: max-content;
+    gap: $dotGap;
+
+    height: $dotSize;
+
+    margin: 5px;
+
+    span {
+      flex-shrink: 0; 
+      width: $dotSize;
+      height: $dotSize;
+      display: block;
+      border-radius: 50%;
+      background: #d7d7d5;
+      &:nth-child(1), &:nth-child(9) {background: #F1F1EF;}
+      &:nth-child(2), &:nth-child(8) {background: #E5E5E5;} 
+      &.active {
+        background: var(--bg) !important;
+        border: 1px solid white;
+        outline: 2px solid #d7d7d5;
+        & + span, & + span + span {background: #d7d7d5;}
+      }
+      &:has(+ .active), &:has(+ span + .active) {background: #d7d7d5;}
+    }
+  }
+}
+
+/* =========================
+   VIDEO
+========================= */
+
+.Videos {
+  height: 420px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &--users {
+    height: 50%;
+    max-height: 220px;
+    padding: 14px;
+    overflow: hidden;
+    border-radius: 20px;
+    position: relative;
+    z-index: 1;
+
+    @include flex-set(space-between, unset, column);
+
+    &__back {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+
+      overflow: hidden;
+
+      background: black;
+      @include flex-set;
+
+      video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        //opacity: 0;
+        z-index: 0;
+        will-change: opacity;
+        &.active {
+          opacity: 1;
+          z-index: 5;
+        }
+      }
+    }
+
+    &__profile {
+      $imgSize: 30px;
+
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: $imgSize;
+      img {
+        width: $imgSize;
+        aspect-ratio: 1 / 1;
+        overflow: hidden;
+        border-radius: 50%;
+        background: white;
+      }
+
+      p {
+        font-size: 16px;
+        font-weight: 400;
+
+        font-family: auto;
+      }
+    }
+
+    &__middle {
+      @include flex-set(center, center, column);
+      text-align: center;
+
+      h3 {
+        font-size: 30px;
+      }
+
+      p {
+        font-size: 14px;
+        font-family: auto;
+        text-shadow: 0 0 20px #cfcfcf;
+      }
+    }
+
+    &__rights {
+      text-align: right;
+    }
+  }
+}
+
+.Last {
+  height: 35px;
 }

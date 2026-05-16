@@ -1,64 +1,5 @@
 @import "./basicSet.scss";
 
-/* =========================
-   ROOT
-========================= */
-
-:root {
-  --color-lightGrey: #f5f5f5;
-  --color-black: #1C1C1E;
-  --color-fontLightGrey: #d4d4d4;
-  --color-btn-color: rgba(183, 43, 226, 0.8);
-  --line: 1px dashed blueviolet;
-
-  /* TEXT */
-  --text-primary: #F5F7FA;
-  --text-secondary: #A3A8B3;
-  --text-muted: #6F7785;
-
-  /* BASE */
-  --border: #474e59;
-  --border-soft: #232831;
-  --bg: #0F1115;
-
-  /* PRIMARY */
-  --primary: #6C5CE7;
-  --primary-hover: #7B6EF6;
-  --primary-active: #5A4BD1;
-
-  /* STATE */
-  --success: #3CCB7F;
-  --warning: #FFB547;
-  --danger: #FF5D73;
-
-  /* INPUT / TOGGLE */
-  --input-bg: #f9f9f9;
-  --input-border: #303744;
-  --input-focus: #6C5CE7;
-  --toggle-off: #3A404C;
-  --toggle-on: #6C5CE7;
-
-  /* SHADOW */
-  --shadow-soft: 0 4px 12px rgba(0,0,0,.25);
-  --shadow-card: 0 8px 24px rgba(0,0,0,.32);
-
- /* GLASS EFFECT */
-  --glass-bg: rgba(255,255,255,0.03);
-  --glass-border: rgba(255,255,255,0.06);
-}
-
-/* =========================
-   VARIABLES
-========================= */
-
-$visualWidth: 420px;
-
-$colors: (
-  "blueviolet": blueviolet,
-  "white": white,
-  "darkcyan": darkcyan,
-  "orange": orange
-);
 
 /* =========================
    MIXIN
@@ -287,7 +228,7 @@ body {
       width: 130px;
       background: var(--input-bg);
       border: 1px solid var(--input-border);
-      padding: 12px;
+      padding: 8px;
       &:focus {
         border-color: var(--input-focus);
       }
