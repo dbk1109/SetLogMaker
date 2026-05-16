@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* =========================
    FONT
 ========================= */
@@ -898,4 +899,171 @@ body section {
 }
 #toggleSort.is-unlocked {
   background: var(--color-btn-color);
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 1500px) {
+  .Timeline {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+@media (max-width: 1200px) {
+  .Timeline {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .option {
+    flex-direction: column;
+  }
+}
+@media (max-width: 1024px) {
+  body {
+    flex-direction: column;
+    align-items: center;
+  }
+  body section {
+    height: auto;
+    min-height: auto;
+  }
+  .Timeline {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  #setting {
+    width: 100%;
+  }
+  #fullscreenWrap {
+    width: min(420px, 100%);
+    margin-top: 20px;
+  }
+  #visual {
+    position: initial;
+  }
+  .option {
+    flex-direction: row;
+  }
+}
+@media (max-width: 900px) {
+  .option {
+    flex-direction: column;
+  }
+}
+@media (max-width: 900px) and (orientation: landscape) {
+  body {
+    flex-direction: row;
+    gap: 20px;
+    padding: 20px;
+  }
+  #setting {
+    width: 55%;
+    overflow-y: auto;
+  }
+  #fullscreenWrap {
+    width: 45%;
+    border-radius: 30px;
+  }
+  .Videos {
+    height: auto;
+  }
+}
+@media (max-width: 700px) {
+  .Timeline {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (max-width: 600px) {
+  body {
+    flex-direction: column;
+    gap: 20px;
+    padding: 0;
+  }
+  #setting {
+    width: 100%;
+    height: unset;
+    padding: 16px;
+  }
+  .nickname-input {
+    width: calc(100% - 4rem - 10px);
+  }
+  .Timeline {
+    gap: 10px;
+  }
+  .Timeline--item {
+    padding: 10px;
+  }
+  .Timeline--item:not(:last-child)::after {
+    font-size: 14px;
+    right: -10px;
+  }
+  .thumb {
+    max-height: 64px;
+  }
+  .slot-text {
+    font-size: 12px;
+  }
+  #fullscreenWrap {
+    width: 100%;
+    border-radius: 20px;
+  }
+  #fullscreenWrap #visual {
+    width: 100dvw !important;
+    height: 100dvh !important;
+    transform: scale(1) !important;
+  }
+  .btn-upload {
+    width: 100%;
+  }
+  .option--save {
+    flex-direction: column;
+    align-items: start;
+  }
+  .option--save .save--btns {
+    justify-content: flex-start;
+    flex-direction: row-reverse;
+    width: 100%;
+  }
+}
+/* =========================
+   SAFETY
+========================= */
+.Videos--users__back video {
+  width: 100% !important;
+  height: 100% !important;
+  -o-object-fit: cover;
+     object-fit: cover;
+  background-color: black;
+}
+
+.btn-floating-menu i,
+.btn-floating-menu span,
+.btn-drawer i,
+.btn-drawer span {
+  pointer-events: none;
+}
+
+/* =========================
+   셋팅 추가
+========================= */
+/* 아이폰용 유사 전체화면 스타일 */
+.ios-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important; /* 최신 브라우저용 동적 높이 */
+  z-index: 9999 !important;
+  background: #000 !important;
+  border-radius: 0 !important; /* 둥근 모서리 해제 */
+}
+
+/* 유사 전체화면 시 내부 레이아웃 고정 */
+.ios-fullscreen #visual {
+  width: 100% !important;
+  height: 100% !important;
+  transform: scale(1) !important;
+}
+
+/* 재생 중 메뉴 숨김 처리 */
+body.is-playing .controller {
+  display: none !important;
 }/*# sourceMappingURL=mvp3.min.css.map */
