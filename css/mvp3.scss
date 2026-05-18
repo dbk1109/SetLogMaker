@@ -10,6 +10,8 @@
   --color-fontLightGrey: #d4d4d4;
   --color-btn-color: rgba(183, 43, 226, 0.8);
   --line: 1px dashed blueviolet;
+  --surface: #1E2025; // 👈 누락되었던 카드 표면 색상 정의
+  --input-inner-bg: #15171C;
 
   /* TEXT */
   --text-primary: #F5F7FA; 
@@ -65,11 +67,41 @@
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
 }
+@mixin scroll-indicator($direction) {
+  content: if($direction == "left", "◀", "▶");
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  opacity: 1;
+  @if $direction == "left" {
+    left: 0;
+    justify-content: flex-start;
+    padding-left: 8px;
+    background: linear-gradient(90deg, #000000 30%, transparent);
+  } @else if $direction == "right" {
+    right: 0;
+    justify-content: flex-end;
+    padding-right: 8px;
+    background: linear-gradient(270deg, #000000 30%, transparent);
+  }
+}
  
 /* =========================
    SETTING SECTION
 ========================= */
-
+body {
+  padding-left: 0;
+}
+$bodyPadding: 30px;
 #leftWrap {
   @include flex-set(space-between, normal, column);
   gap: 20px;
@@ -81,6 +113,7 @@
 #setting { 
   @include flex-set(space-between, normal, column);
   gap: 20px;
+  padding-left: $bodyPadding;
   h1 {
     font-size: 1.5rem;
     overflow: hidden;
@@ -115,18 +148,15 @@
   .label-text {
     color: var(--color-lightGrey);
     word-break: keep-all;
-    width: fit-content;
     span {cursor: pointer;}
   }
 
   &--time {
     gap: 10px;
     cursor: pointer;
-    
     input {
       display: none;
     }
-
     .slider {
       width: 40px;
       height: 20px;
@@ -134,7 +164,6 @@
       border-radius: 20px;
       position: relative;
       transition: 0.2s;
-
       &::after {
         content: '';
         position: absolute;
@@ -170,6 +199,12 @@
     .save--btns {
       @include flex-set;
       gap: 10px;
+    }
+    #autoSaveStatus {
+      transition: all 0.3s;
+    }
+    #clearAllBtn {
+      font-size: 12px;
     }
   }
 
@@ -227,18 +262,48 @@
   width: 100%;
   max-height: 500px;
   gap: 10px;
+  position: relative;
+  &::before {
+    @include scroll-indicator("left");
+  }
   &::after {
-    content: '';
-    display: block;
-    width: 30px;
-    height: 100%;
-    position: absolute;
-    top: 0; right: 0;
-    background: linear-gradient(270deg, #000000, transparent);
+    @include scroll-indicator("right");
+  }
+  &.is-at-start::before{opacity:0;transform: translateX(-5px);}
+  &.is-at-end::after{opacity:0;transform: translateX(5px);}
+}
+
+.timeTitle {
+  padding-left: $bodyPadding;
+  position: relative;
+  z-index: 9;
+  .indicator {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+
+    // 24개 원형 기본 스타일 (내용이 없을 때: 속이 빈 원)
+    .time-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border); 
+      background: transparent;
+      transition: all 0.3s ease;
+
+      // 내용이 존재할 때 (속이 찬 원으로 변화)
+      &.is-filled {
+        background: var(--color-btn-color); // 또는 var(--primary) 등 원하는 컬러
+        border-color: var(--color-btn-color);
+        box-shadow: 0 0 6px var(--color-btn-color);
+      }
+    }
   }
 }
 
 .timeline {
+  padding: 0 $bodyPadding;
   width: 100%;
   overflow: scroll hidden;
   display: flex;
@@ -254,17 +319,6 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-  //  &:not(:last-child)::after {
-  //    content: "→";
-  //    font-size: 20px;
-  //    font-weight: bold;
-  //    color: var(--color-lightGrey);
-  //    position: absolute;
-  //    z-index: -1;
-  //    top: 50%;
-  //    transform: translateY(-50%);
-  //    right: -15px;
-  //  }
   }
   &--header {
     width: 100%;
@@ -284,8 +338,8 @@
   .thumb {
     user-select: none;
     position: relative;
-    width: 200px;
-    height: 100px;
+    width: 100%;
+    min-height: 100px;
     video {
       width: 100%;
       height: 100%;
@@ -295,22 +349,6 @@
     &.empty {
       display: block;
       video {display: none;}
-      //border: 1px dashed var(--text-secondary);
-      //&::after {
-      //  content: "+";
-      //  width: 100%;
-      //  height: 100%;
-      //  color: var(--text-secondary);
-      //  font-size: 12px;
-      //  position: absolute;
-      //  top: 0;
-      //  left: 0;
-      //  display: flex;
-      //  justify-content: center;
-      //  align-items: center;
-      //  z-index: 10;
-      //}
-      //video {opacity: 0;}
     }
     &:not(.empty) {
       video {display: block;}
@@ -343,6 +381,7 @@
         font-size: 12px;
         @include flex-set;
         padding: 0;
+        transition: unset;
         &:hover {
           opacity: .8;
         }
@@ -370,8 +409,6 @@
   }
 
 }
-
-
 
 /* =========================
    FLOATING CONTROLLER
@@ -530,16 +567,10 @@
 ========================= */
 
 @media (max-width: 1500px) {
-  .Timeline {
-    grid-template-columns: repeat(4, 1fr);
-  }
 }
 
 @media (max-width: 1200px) {
-  .Timeline {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .option {
+  #setting .setting--wrap {
     flex-direction: column;
   }
 }
@@ -554,27 +585,32 @@
       min-height: auto;
     }
   }
-  .Timeline {
-    grid-template-columns: repeat(4, 1fr);
-  }
   #setting {
     width: 100%;
   }
   #fullscreenWrap {
     width: min(420px, 100%);
-
     margin-top: 20px;
   }
   #visual {
     position: initial;
   }
-  .option {
+  .options {
     flex-direction: row;
+  }
+  #setting .setting--wrap:not(.userClass) {
+    flex-direction: row;
+  }
+  #timeBlocks {
+    width: 95dvw;
   }
 }
 
 @media (max-width: 900px) {
-  .option {
+  .options {
+    flex-direction: column;
+  }
+  #setting .setting--wrap:not(.userClass) {
     flex-direction: column;
   }
 }
@@ -605,7 +641,7 @@
 }
 
 @media (max-width: 700px) {
-  .Timeline {
+  .timeline {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -624,21 +660,30 @@
     height: unset;
     padding: 16px;
   }
+  #setting .setting--wrap {
+    flex-direction: row;
+  }
   .nickname-input {
     width: calc(100% - 4rem - 10px);
   }
-  .Timeline {
+  .timeTitle {
+    padding-left: 16px;
+  }
+  .timeline {
+    padding: 0 16px;
     gap: 10px;
   }
-  .Timeline--item {
+  .timeline--item {
     padding: 10px;
+    width: 33dvw;
   }
-  .Timeline--item:not(:last-child)::after {
+  .timeline--item:not(:last-child)::after {
     font-size: 14px;
     right: -10px;
   }
-  .thumb {
-    max-height: 64px;
+  .timeline--item .thumb {
+    height: 62px;
+    min-height: unset;
   }
   .slot-text {
     font-size: 12px;
@@ -659,14 +704,12 @@
   .btn-upload {
     width: 100%;
   }
-  .option--save {
+  .options--save {
     flex-direction: column;
       align-items: start;
   }
-  .option--save .save--btns {
+  .options--save .save--btns {
     justify-content: flex-start;
-    flex-direction: row-reverse;
-    width: 100%;
   }
 }
 
@@ -716,4 +759,205 @@
 /* 재생 중 메뉴 숨김 처리 */
 body.is-playing .controller {
   display: none !important;
+}
+
+
+
+
+
+/* ========================================================
+   MODERNIZED DESIGN UPGRADE (SCSS)
+======================================================== */
+
+// 1. 설정 및 유저 프로필 카드 스타일 리터칭
+.options .setting--wrap > *, 
+.users--profile {
+  background: var(--surface) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 12px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4) !important;
+  }
+}
+
+// 입력 박스 세련되게 다듬기
+.options--title input,
+.users--profile__nickname {
+  background: var(--input-inner-bg) !important;
+  border: 1px solid var(--input-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  
+  &:focus {
+    border-color: var(--primary) !important;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+  }
+}
+
+// 2. 타임라인 섹션 톤앤매너 전면 수정
+.timeline {
+  display: flex;
+  gap: 16px;
+  padding: 20px 30px !important;
+
+  &--item {
+    width: 180px; // 👈 PC 기본 가로폭 밸런스 조정
+    flex-shrink: 0;
+    background: var(--surface) !important; // 밝은 회색에서 다크 톤으로 변경
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    box-shadow: var(--shadow-card) !important;
+    border-radius: 14px !important;
+    padding: 14px !important;
+  }
+
+  &--header {
+    color: var(--text-primary) !important; // 글자 밝게 교체
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  // 업로드 점선 영역 포인트 컬러화
+  .thumb .btn--upload {
+    border: 1px dashed rgba(108, 92, 231, 0.4) !important;
+    background: rgba(108, 92, 231, 0.03);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    
+    &:hover {
+      background: rgba(108, 92, 231, 0.08);
+      border-color: var(--primary) !important;
+      color: var(--text-primary);
+    }
+  }
+
+  // 하단 텍스트 인풋 폼 형태로 진화
+  .slot-text {
+    background: var(--input-inner-bg) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 6px !important;
+    color: var(--text-primary) !important;
+    padding: 6px 10px !important;
+    font-size: 13px;
+    margin-top: 4px;
+
+    &:focus {
+      border-color: var(--primary) !important;
+    }
+  }
+}
+
+// 3. 모바일 반응형 구조 디테일 강화
+@media (max-width: 600px) {
+  #setting {
+    padding: 20px 16px !important;
+  }
+
+  .timeline {
+    padding: 10px 16px !important;
+    gap: 12px !important;
+
+    &--item {
+      width: 145px !important; // 👈 모바일에서 구겨지지 않고 시원하게 가로 스크롤 보장
+      padding: 12px !important;
+      gap: 14px !important;
+    }
+    
+    .thumb {
+      height: 75px !important; // 모바일 스크린샷 대비 이미지 영역 세로 비율 살짝 확장
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  /* 1. 세팅 섹션 전체 패딩 및 간격 최적화 */
+  #setting {
+    padding: 16px;
+    gap: 12px; // 섹션 간 간격을 좁혀 콤팩트하게
+
+    h2 {
+      font-size: 1.1rem; // 타이틀 크기를 모바일에 맞춤 조정
+      margin-bottom: 4px;
+    }
+  }
+
+  /* 2. 환경 설정 카드를 2열 그레디언트/그리드로 압축 */
+  .options .setting--wrap {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important; // 👈 2열 배치로 전환
+    gap: 8px !important;
+
+    // 타이틀 입력 칸은 길어야 하므로 혼자 두 칸을 다 쓰게 처리
+    .options--save {
+      grid-column: span 2; 
+      padding: 12px 14px !important;
+    }
+
+    // 24시간제 보기 & 저장/초기화는 반반씩 나눠 가집니다.
+    .options--time,
+    .options--title {
+      padding: 12px 14px !important;
+      flex-direction: column !important; // 세로 정렬로 컴팩트하게
+      align-items: flex-start !important;
+      justify-content: center !important;
+      gap: 6px !important;
+
+      .label-text {
+        font-size: 12px;
+      }
+    }
+    
+    // 저장/초기화 내부 버튼 및 텍스트 레이아웃 보정
+    .options--save {
+      .save--btns {
+        width: 100%;
+        justify-content: space-between;
+      }
+      #autoSaveStatus {
+        font-size: 11px;
+      }
+    }
+  }
+
+  /* 3. 유저 설정(프로필)을 세로 2층 -> 가로 나란히(1열 2행)로 압축 */
+  .users {
+    display: flex !important;
+    flex-direction: row !important; // 👈 가로 정렬로 전환
+    gap: 8px !important;
+
+    &--profile {
+      flex: 1; // 반반씩 똑같이 나눠 가짐
+      padding: 12px !important;
+      flex-direction: column !important; // 카드 내부는 세로로 흐르게 변경
+      align-items: center !important;
+      text-align: center;
+      gap: 8px !important;
+
+      // "1번", "2번" 가이드 텍스트 위치 보정
+      &::before {
+        font-size: 11px;
+        align-self: flex-start;
+      }
+
+      // 프로필 동그라미 크기를 살짝 줄임
+      &__img {
+        width: 3.2rem !important;
+        height: 3.2rem !important;
+      }
+
+      // 닉네임 입력 칸 폭 100% 채우기
+      &__nickname {
+        width: 100% !important;
+        font-size: 12px;
+        padding: 6px 8px !important;
+        min-height: 32px !important;
+      }
+    }
+  }
 }

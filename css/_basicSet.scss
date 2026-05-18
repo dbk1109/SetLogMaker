@@ -105,9 +105,10 @@ button{padding:0;border:none;border-radius:0;background:inherit;box-shadow:none;
   --line: 1px dashed blueviolet;
 
   /* TEXT */
-  --text-primary: #F5F7FA;
+  --text-primary: #F5F7FA; 
   --text-secondary: #A3A8B3;
   --text-muted: #6F7785;
+  --text-black: #232831;
 
   /* BASE */
   --border: #474e59;
@@ -150,7 +151,9 @@ $colors: (
   "blueviolet": blueviolet,
   "white": white,
   "darkcyan": darkcyan,
-  "orange": orange
+  "orange": orange,
+  "red": red,
+  "grey": grey,
 );
 
 /* =========================
@@ -331,19 +334,36 @@ body {
       overflow: hidden; 
       margin: 14px auto;
       position: relative;
+
+      display: flex;
+      justify-content: center;
     }
     $dotSize: 10px;
     $dotGap: 6px;
 
     @include flex-set(flex-start);
-
+    gap: $dotGap;    
     width: max-content;
-    gap: $dotGap;
-
     height: $dotSize;
 
-    margin: 5px;
-
+    margin: 0;
+    // 10개 이하일 때 중앙 정렬 상태로 변환하는 스타일 규칙
+    &.justify-center {
+      justify-content: center;
+      width: 100%;
+      transform: none !important; // 10개 이하일 땐 혹시 모를 밀림 현상 방지
+      
+      span {
+        // 기존에 nth-child 등으로 먹어있던 흐릿한 Fallback 투명도 초기화
+        background: #d7d7d5 !important; 
+        
+        &.active {
+          background: var(--bg) !important;
+          border: 1px solid white;
+          outline: 2px solid #d7d7d5;
+        }
+      }
+    }
     span {
       flex-shrink: 0; 
       width: $dotSize;

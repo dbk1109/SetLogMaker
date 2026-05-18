@@ -123,6 +123,7 @@ button {
   --text-primary: #F5F7FA;
   --text-secondary: #A3A8B3;
   --text-muted: #6F7785;
+  --text-black: #232831;
   /* BASE */
   --border: #474e59;
   --border-soft: #232831;
@@ -182,6 +183,14 @@ button {
 }
 .btn-orange {
   background-color: orange;
+  color: #fff;
+}
+.btn-red {
+  background-color: red;
+  color: #fff;
+}
+.btn-grey {
+  background-color: grey;
   color: #fff;
 }
 
@@ -320,17 +329,32 @@ body section {
   overflow: hidden;
   margin: 14px auto;
   position: relative;
+  display: flex;
+  justify-content: center;
 }
 .Menu--dots {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   flex-direction: row;
+  gap: 6px;
   width: -moz-max-content;
   width: max-content;
-  gap: 6px;
   height: 10px;
-  margin: 5px;
+  margin: 0;
+}
+.Menu--dots.justify-center {
+  justify-content: center;
+  width: 100%;
+  transform: none !important;
+}
+.Menu--dots.justify-center span {
+  background: #d7d7d5 !important;
+}
+.Menu--dots.justify-center span.active {
+  background: var(--bg) !important;
+  border: 1px solid white;
+  outline: 2px solid #d7d7d5;
 }
 .Menu--dots span {
   flex-shrink: 0;
@@ -478,6 +502,14 @@ body section {
 }
 .btn-orange {
   background-color: orange;
+  color: #fff;
+}
+.btn-red {
+  background-color: red;
+  color: #fff;
+}
+.btn-grey {
+  background-color: grey;
   color: #fff;
 }
 

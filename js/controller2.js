@@ -1,8 +1,8 @@
-/* =========================
-   CONTROLLER UI
-   controller2.js
-========================= */
-
+/* ========================================================
+   SETLOG MAKER MVP3 - UI Controller & Local Storage
+   Filename: controller2.js
+   Description: DOM 이벤트 바인딩, 드로어 제어, IndexedDB 입출력
+======================================================== */
 
 /* =========================
   INDEXEDDB VIDEO STORAGE
@@ -52,6 +52,9 @@ const VideoDB = {
   },
 };
 
+/* =========================
+  MAIN APP UI CONTROLLER
+========================= */
 const APP_UI = {
   isMenuOpen: window.innerWidth <= 768,
 
@@ -61,7 +64,6 @@ const APP_UI = {
     this.loadFromLocalStorage();
 
     this.updateMenuUI();
-    this.updateSortUI();
     this.updatePlayBtnUI();
     this.handleFullscreenChange();
   },
@@ -69,7 +71,6 @@ const APP_UI = {
   cacheDOM() {
     this.drawer = document.querySelector("#floatingDrawer");
     this.menuBtn = document.querySelector("#floatingMenuBtn");
-    this.sortBtn = document.querySelector("#toggleSort");
     this.playBtn = document.querySelector("#playAll");
     this.fullscreenBtn = document.querySelector("#fullscreenBtn");
     this.playNotice = document.querySelector("#playNotice");
@@ -140,22 +141,53 @@ const APP_UI = {
       window.APP_CORE.startPlayback();
     });
 
-    // 드래그 앤 드롭 정렬 잠금 토글
-    this.sortBtn?.addEventListener("click", () => {
-      window.isSortLocked = !window.isSortLocked;
-      this.updateSortUI();
+    const initScrollGradient = () => {
+      const timeBlocks = document.querySelector(".timeline");
+      const container = document.querySelector("#timeBlocks");
+      
+      if (!timeBlocks || !container) return;
 
-      ["user1", "user2"].forEach((u) => {
-        const el = document.querySelector(`#timeline-${u}`);
-        if (el?._sortable) el._sortable.option("disabled", window.isSortLocked);
-      });
-    });
+      const updateGradientStatus = () => {
+        const scrollLeft = timeBlocks.scrollLeft;
+        const maxScroll = timeBlocks.scrollWidth - timeBlocks.clientWidth;
+
+        // 1. 맨 왼쪽에 붙어있는가?
+        if (scrollLeft <= 4) { // 오차 범위를 4px로 약간 넓혀 안전성 강화
+          container.classList.add("is-at-start");
+        } else {
+          container.classList.remove("is-at-start");
+        }
+
+        // 2. 맨 오른쪽에 완전히 도달했는가? 또는 스크롤바가 생길 필요가 없는 상태인가?
+        if (maxScroll <= 0 || scrollLeft >= maxScroll - 4) {
+          container.classList.add("is-at-end");
+        } else {
+          container.classList.remove("is-at-end");
+        }
+      };
+
+      // 스크롤 및 화면 크기 변화 감지 바인딩
+      timeBlocks.removeEventListener("scroll", updateGradientStatus);
+      timeBlocks.addEventListener("scroll", updateGradientStatus);
+      
+      window.removeEventListener("resize", updateGradientStatus);
+      window.addEventListener("resize", updateGradientStatus);
+      
+      // 전역 스코프에 함수를 열어두어 필요시 코어 엔진에서 트리거할 수 있게 브릿지 연결
+      window.APP_UI.refreshScrollGradient = updateGradientStatus;
+
+      // 즉시 및 레이턴시 보정 체크
+      updateGradientStatus();
+      setTimeout(updateGradientStatus, 400);
+    };
+
+    // DOMContentLoaded 대기문을 제거하고, 함수 선언 즉시 실행합니다.
+    initScrollGradient();
 
     this.bindDynamicEvents();
   },
 
   bindDynamicEvents() {
-    // 1. 타임라인 내부 비디오 추가 및 상단 일괄 업로드 처리
     document.addEventListener("change", async (e) => {
       if (e.target.matches(".btn--upload input")) {
         const input = e.target;
@@ -180,7 +212,7 @@ const APP_UI = {
       }
     });
 
-    // 2. 텍스트 실시간 반영 (HTML 매칭 완화)
+    /* 타임라인 내부 텍스트 수정 시 로컬 스토리지 즉시 동기화 */
     document.addEventListener("input", (e) => {
       if (e.target.classList.contains("slot-text")) {
         const input = e.target;
@@ -193,11 +225,12 @@ const APP_UI = {
           if (window.APP_CORE.currentIndex === index) {
             window.APP_CORE.syncVisual(index);
           }
+          // 글자 한 자 한 자 입력될 때마다 저장소를 업데이트합니다.
+          this.saveToLocalStorage(); 
         }
       }
     });
 
-    // 3. 비디오 단일 삭제 제어
     document.addEventListener("click", async (e) => {
       const btn = e.target.closest(".delete-video-btn, .btn--delete_video");
       if (!btn) return;
@@ -223,7 +256,6 @@ const APP_UI = {
   },
 
   bindSettingEvents() {
-    // 24시간제 변경 스위치
     const timeToggle = document.querySelector("#timeFormatToggle");
     timeToggle?.addEventListener("change", (e) => {
       window.APP_CORE.state.is24h = e.target.checked;
@@ -232,7 +264,6 @@ const APP_UI = {
       this.saveToLocalStorage();
     });
 
-    // 상단 런타임 타이틀 입력 제한 및 매핑
     const titleInput = document.querySelector("#titleTextChange");
     titleInput?.addEventListener("input", (e) => {
       let value = e.target.value;
@@ -257,72 +288,83 @@ const APP_UI = {
       window.APP_CORE.state.title = value;
       const targetTitle = document.querySelector(".title--text p");
       if (targetTitle) targetTitle.textContent = value || "💚💜";
+      
+      this.saveToLocalStorage();
     });
 
-    // 유저 프로필 업로드 및 배경 레이아웃 동기화
     document.querySelectorAll(".profile-input").forEach((input) => {
       input.addEventListener("change", (e) => {
         const profileBox = e.target.closest(".users--profile");
         if (!profileBox) return;
         
-        // 순서(index) 혹은 ID를 기반으로 유저 타겟 분기
         const isUser1 = e.target.id === "profile-user1";
         const user = isUser1 ? "user1" : "user2";
         const file = e.target.files[0];
         
         if (file) {
-          const url = URL.createObjectURL(file);
-          const label = profileBox.querySelector(".users--profile__img");
-          if (label) {
-            label.style.backgroundImage = `url(${url})`;
-            label.style.backgroundSize = "cover";
-            label.style.backgroundPosition = "center";
-            label.textContent = "";
-          }
-          const img = document.querySelector(`#${user} .Videos--users__profile img`);
-          if (img) img.src = url;
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64Url = event.target.result;
+            
+            const label = profileBox.querySelector(".users--profile__img");
+            if (label) {
+              label.style.backgroundImage = `url(${base64Url})`;
+              label.style.backgroundSize = "cover";
+              label.style.backgroundPosition = "center";
+              label.textContent = "";
+            }
+            const img = document.querySelector(`#${user} .Videos--users__profile img`);
+            if (img) img.src = base64Url;
+
+            if (!window.APP_CORE.state.profiles) window.APP_CORE.state.profiles = {};
+            window.APP_CORE.state.profiles[user] = base64Url;
+            this.saveToLocalStorage();
+          };
+          reader.readAsDataURL(file);
         }
       });
     });
 
-    // 유저 닉네임 변경 동기화
     document.querySelectorAll(".users--profile__nickname").forEach((input) => {
       input.addEventListener("input", (e) => {
         const profileBox = e.target.closest(".users--profile");
         const isUser1 = profileBox?.querySelector(".profile-input")?.id === "profile-user1";
         const user = isUser1 ? "user1" : "user2";
+        const value = e.target.value;
         
         const target = document.querySelector(`#${user} .nickname`);
-        if (target) target.textContent = e.target.value || user;
+        if (target) target.textContent = value || user;
+
+        if (!window.APP_CORE.state.nicknames) window.APP_CORE.state.nicknames = {};
+        window.APP_CORE.state.nicknames[user] = value;
+        this.saveToLocalStorage();
       });
     });
 
-    // 수동 세이브 버튼
-    const saveBtn = document.querySelector("#saveDataBtn");
-    saveBtn?.addEventListener("click", () => {
-      this.saveToLocalStorage();
-      const originalHTML = saveBtn.innerHTML;
-      saveBtn.classList.add("success");
-      saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>저장 완료!</span>`;
-      setTimeout(() => {
-        saveBtn.classList.remove("success");
-        saveBtn.innerHTML = originalHTML;
-      }, 1000);
-    });
-
-    // 전체 리셋 버튼
     const clearBtn = document.querySelector("#clearAllBtn");
     clearBtn?.addEventListener("click", async () => {
-      if (confirm("모든 텍스트와 설정이 초기화됩니다. 정말 삭제하시겠습니까?")) {
+      if (confirm("모든 데이터와 프로필 설정이 초기화됩니다. 정말 삭제하시겠습니까?")) {
         window.APP_CORE.clearAllData();
         localStorage.removeItem("APP_SAVE_DATA");
         
-        // 프로필 뷰 초기화
+        window.APP_CORE.state.profiles = { user1: "", user2: "" };
+        window.APP_CORE.state.nicknames = { user1: "", user2: "" };
+
         document.querySelectorAll(".users--profile__img").forEach(lbl => {
           lbl.style.backgroundImage = "";
           lbl.innerHTML = "+ <br> 프로필";
         });
         document.querySelectorAll(".users--profile__nickname").forEach(inp => inp.value = "");
+        
+        const p1Img = document.querySelector("#user1 .Videos--users__profile img");
+        if (p1Img) p1Img.src = "";
+        const p2Img = document.querySelector("#user2 .Videos--users__profile img");
+        if (p2Img) p2Img.src = "";
+        const n1Text = document.querySelector("#user1 .nickname");
+        if (n1Text) n1Text.textContent = "user1";
+        const n2Text = document.querySelector("#user2 .nickname");
+        if (n2Text) n2Text.textContent = "user2";
+
         await VideoDB.clear();
         alert("모든 데이터가 삭제되었습니다.");
       }
@@ -354,17 +396,6 @@ const APP_UI = {
     if (!isFS) document.querySelector(".controller")?.classList.remove("is-hidden");
   },
 
-  updateSortUI() {
-    if (!this.sortBtn) return;
-    const isLocked = window.isSortLocked;
-    this.sortBtn.className = `btn btn-drawer ${isLocked ? "is-locked" : "is-unlocked"}`;
-    this.sortBtn.innerHTML = isLocked
-      ? `<i class="fa-solid fa-lock"></i> <span>잠금됨</span>`
-      : `<i class="fa-solid fa-lock-open"></i> <span>이동 가능</span>`;
-
-    document.body.classList.toggle("sort-unlocked", !isLocked);
-  },
-
   updatePlayBtnUI() {
     if (!this.playBtn) return;
     if (window.isPlaying) {
@@ -376,12 +407,29 @@ const APP_UI = {
 
   initDots(playableIndexes) {
     const container = document.querySelector(".Menu--dots");
-    if (!container) return;
+    if (!container || !playableIndexes) return;
     container.innerHTML = "";
-    const count = Math.min(playableIndexes.length, 9);
-    for (let i = 0; i < count; i++) {
-      const dot = document.createElement("span");
-      container.appendChild(dot);
+    
+    const total = playableIndexes.length;
+
+    // 조건 2 & 3 분기 처리
+    if (total <= 10) {
+      // [10개 이하] 활성 상태인 개수만큼 정직하게 다 보여주고 중앙 정렬
+      container.classList.add("justify-center");
+      
+      for (let i = 0; i < total; i++) {
+        const dot = document.createElement("span");
+        container.appendChild(dot);
+      }
+    } else {
+      // [10개 초과] 기존에 설정한 움직이는 도트 메커니즘 유지 (최대 9개 노출)
+      container.classList.remove("justify-center");
+      
+      const count = Math.min(total, 9);
+      for (let i = 0; i < count; i++) {
+        const dot = document.createElement("span");
+        container.appendChild(dot);
+      }
     }
   },
 
@@ -393,31 +441,74 @@ const APP_UI = {
     const activePos = playableIndexes.indexOf(currentIndex);
     const total = playableIndexes.length;
 
-    let visualIdx = 0;
-    if (total <= 9) {
-      visualIdx = activePos !== -1 ? activePos : 0;
-    } else {
-      if (activePos < 5) {
-        visualIdx = activePos !== -1 ? activePos : 0;
-      } else if (activePos >= total - 4) {
-        visualIdx = 9 - (total - activePos);
-      } else {
-        visualIdx = 4;
-      }
-    }
+    if (total === 0 || activePos === -1) return;
 
-    dots.forEach((dot, idx) => {
-      dot.classList.toggle("active", idx === visualIdx);
-      dot.classList.toggle("prev", idx < visualIdx);
-    });
+    let visualIdx = 0;
+
+    // 조건 2 & 3에 따른 활성화 포지션 매칭
+    if (total <= 10) {
+      // 10개 이하일 때는 스크롤 이동 없이 실제 인덱스 위치에 active 부여
+      visualIdx = activePos;
+      
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle("active", idx === visualIdx);
+        dot.classList.remove("prev"); // 중앙 정렬일 때는 prev 그라데이션 제거
+      });
+    } else {
+      // 10개 초과일 때: 기존 작성하신 움직이는 정밀 알고리즘 그대로 유지
+      if (total <= 9) {
+        visualIdx = activePos !== -1 ? activePos : 0;
+      } else {
+        if (activePos < 5) {
+          visualIdx = activePos !== -1 ? activePos : 0;
+        } else if (activePos >= total - 4) {
+          visualIdx = 9 - (total - activePos);
+        } else {
+          visualIdx = 4;
+        }
+      }
+
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle("active", idx === visualIdx);
+        dot.classList.toggle("prev", idx < visualIdx); // 기존 그라데이션 효과 유지
+      });
+    }
   },
 
   saveToLocalStorage() {
     try {
+      // 저장 시작 상태 표시
+      const statusEl = document.querySelector("#autoSaveStatus");
+      if (statusEl) {
+        statusEl.style.opacity = "1";
+        statusEl.textContent = "🔄 저장 중...";
+        statusEl.style.color = "#ffb703";
+      }
+
       const data = window.APP_CORE.getStorageData();
       localStorage.setItem("APP_SAVE_DATA", JSON.stringify(data));
+
+      // 디바운스/타임아웃 효과로 자연스럽게 "저장 완료"로 전환
+      setTimeout(() => {
+        if (statusEl) {
+          statusEl.textContent = "🟢 저장 완료";
+          statusEl.style.color = "#80ed99"; // 완료를 나타내는 편안한 초록 계열
+          
+          // 3초 뒤에 살짝 흐리게 만들어 시선 강탈 방지
+          setTimeout(() => {
+            statusEl.style.opacity = "0.5";
+          }, 3000);
+        }
+      }, 400); // 0.4초 정도 저장 중 연출을 주어 인지하기 쉽게 만듭니다.
+
     } catch (e) {
       console.error("데이터 백업 실패", e);
+      // 에러 발생 시 피드백
+      const statusEl = document.querySelector("#autoSaveStatus");
+      if (statusEl) {
+        statusEl.textContent = "❌ 저장 실패";
+        statusEl.style.color = "#ff4d6d";
+      }
     }
   },
 
@@ -429,17 +520,48 @@ const APP_UI = {
       const data = JSON.parse(saved);
       window.APP_CORE.applyStorageData(data);
 
-      // [IndexedDB 연동] 저장되어 있는 실제 비디오 파일(Blob)을 안전하게 복원
       for (const slot of window.APP_CORE.state.slots) {
         const file1 = await VideoDB.load(slot.id, "user1");
-        if (file1) slot.user1.videoURL = URL.createObjectURL(file1);
+        if (file1) {
+          if (slot.user1.videoURL) URL.revokeObjectURL(slot.user1.videoURL);
+          slot.user1.videoURL = URL.createObjectURL(file1);
+        }
 
         const file2 = await VideoDB.load(slot.id, "user2");
-        if (file2) slot.user2.videoURL = URL.createObjectURL(file2);
+        if (file2) {
+          if (slot.user2.videoURL) URL.revokeObjectURL(slot.user2.videoURL);
+          slot.user2.videoURL = URL.createObjectURL(file2);
+        }
       }
 
-      // 비디오 주소 복원이 끝난 후 타임라인 인터페이스 빌드
       window.APP_CORE.renderAll();
+
+      ["user1", "user2"].forEach((user) => {
+        const profilePic = window.APP_CORE.state.profiles?.[user];
+        const nicknameVal = window.APP_CORE.state.nicknames?.[user];
+
+        const profileInput = document.querySelector(user === "user1" ? "#profile-user1" : "#profile-user2");
+        const profileBox = profileInput?.closest(".users--profile");
+        if (profileBox && profilePic) {
+          const label = profileBox.querySelector(".users--profile__img");
+          if (label) {
+            label.style.backgroundImage = `url(${profilePic})`;
+            label.style.backgroundSize = "cover";
+            label.style.backgroundPosition = "center";
+            label.textContent = "";
+          }
+        }
+        const nicknameInput = profileBox?.querySelector(".users--profile__nickname");
+        if (nicknameInput && nicknameVal) {
+          nicknameInput.value = nicknameVal;
+        }
+
+        const mainImg = document.querySelector(`#${user} .Videos--users__profile img`);
+        if (mainImg && profilePic) mainImg.src = profilePic;
+        
+        const mainNick = document.querySelector(`#${user} .nickname`);
+        if (mainNick && nicknameVal) mainNick.textContent = nicknameVal;
+      });
 
       const titleInput = document.querySelector("#titleTextChange");
       if (titleInput && data.title) {

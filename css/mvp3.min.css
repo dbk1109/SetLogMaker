@@ -123,6 +123,7 @@ button {
   --text-primary: #F5F7FA;
   --text-secondary: #A3A8B3;
   --text-muted: #6F7785;
+  --text-black: #232831;
   /* BASE */
   --border: #474e59;
   --border-soft: #232831;
@@ -182,6 +183,14 @@ button {
 }
 .btn-orange {
   background-color: orange;
+  color: #fff;
+}
+.btn-red {
+  background-color: red;
+  color: #fff;
+}
+.btn-grey {
+  background-color: grey;
   color: #fff;
 }
 
@@ -320,17 +329,32 @@ body section {
   overflow: hidden;
   margin: 14px auto;
   position: relative;
+  display: flex;
+  justify-content: center;
 }
 .Menu--dots {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   flex-direction: row;
+  gap: 6px;
   width: -moz-max-content;
   width: max-content;
-  gap: 6px;
   height: 10px;
-  margin: 5px;
+  margin: 0;
+}
+.Menu--dots.justify-center {
+  justify-content: center;
+  width: 100%;
+  transform: none !important;
+}
+.Menu--dots.justify-center span {
+  background: #d7d7d5 !important;
+}
+.Menu--dots.justify-center span.active {
+  background: var(--bg) !important;
+  border: 1px solid white;
+  outline: 2px solid #d7d7d5;
 }
 .Menu--dots span {
   flex-shrink: 0;
@@ -455,6 +479,8 @@ body section {
   --color-fontLightGrey: #d4d4d4;
   --color-btn-color: rgba(183, 43, 226, 0.8);
   --line: 1px dashed blueviolet;
+  --surface: #1E2025;
+  --input-inner-bg: #15171C;
   /* TEXT */
   --text-primary: #F5F7FA;
   --text-secondary: #A3A8B3;
@@ -492,6 +518,10 @@ body section {
 /* =========================
    SETTING SECTION
 ========================= */
+body {
+  padding-left: 0;
+}
+
 #leftWrap {
   display: flex;
   justify-content: space-between;
@@ -509,6 +539,7 @@ body section {
   align-items: normal;
   flex-direction: column;
   gap: 20px;
+  padding-left: 30px;
 }
 #setting h1 {
   font-size: 1.5rem;
@@ -549,8 +580,6 @@ body section {
 .options .label-text {
   color: var(--color-lightGrey);
   word-break: keep-all;
-  width: -moz-fit-content;
-  width: fit-content;
 }
 .options .label-text span {
   cursor: pointer;
@@ -605,6 +634,12 @@ body section {
   flex-direction: row;
   gap: 10px;
 }
+.options--save #autoSaveStatus {
+  transition: all 0.3s;
+}
+.options--save #clearAllBtn {
+  font-size: 12px;
+}
 
 .users {
   width: 100%;
@@ -655,19 +690,82 @@ body section {
   width: 100%;
   max-height: 500px;
   gap: 10px;
+  position: relative;
 }
-#timeBlocks::after {
-  content: "";
-  display: block;
-  width: 30px;
-  height: 100%;
+#timeBlocks::before {
+  content: "◀";
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
   position: absolute;
   top: 0;
+  width: 40px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  opacity: 1;
+  left: 0;
+  justify-content: flex-start;
+  padding-left: 8px;
+  background: linear-gradient(90deg, #000000 30%, transparent);
+}
+#timeBlocks::after {
+  content: "▶";
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  opacity: 1;
   right: 0;
-  background: linear-gradient(270deg, #000000, transparent);
+  justify-content: flex-end;
+  padding-right: 8px;
+  background: linear-gradient(270deg, #000000 30%, transparent);
+}
+#timeBlocks.is-at-start::before {
+  opacity: 0;
+  transform: translateX(-5px);
+}
+#timeBlocks.is-at-end::after {
+  opacity: 0;
+  transform: translateX(5px);
+}
+
+.timeTitle {
+  padding-left: 30px;
+  position: relative;
+  z-index: 9;
+}
+.timeTitle .indicator {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.timeTitle .indicator .time-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  transition: all 0.3s ease;
+}
+.timeTitle .indicator .time-dot.is-filled {
+  background: var(--color-btn-color);
+  border-color: var(--color-btn-color);
+  box-shadow: 0 0 6px var(--color-btn-color);
 }
 
 .timeline {
+  padding: 0 30px;
   width: 100%;
   overflow: scroll hidden;
   display: flex;
@@ -712,8 +810,8 @@ body section {
      -moz-user-select: none;
           user-select: none;
   position: relative;
-  width: 200px;
-  height: 100px;
+  width: 100%;
+  min-height: 100px;
 }
 .timeline .thumb video {
   width: 100%;
@@ -764,6 +862,7 @@ body section {
   align-items: center;
   flex-direction: row;
   padding: 0;
+  transition: unset;
 }
 .timeline .thumb .btn--upload:hover {
   opacity: 0.8;
@@ -904,16 +1003,8 @@ body section {
 /* =========================
    RESPONSIVE
 ========================= */
-@media (max-width: 1500px) {
-  .Timeline {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
 @media (max-width: 1200px) {
-  .Timeline {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .option {
+  #setting .setting--wrap {
     flex-direction: column;
   }
 }
@@ -926,9 +1017,6 @@ body section {
     height: auto;
     min-height: auto;
   }
-  .Timeline {
-    grid-template-columns: repeat(4, 1fr);
-  }
   #setting {
     width: 100%;
   }
@@ -939,12 +1027,21 @@ body section {
   #visual {
     position: initial;
   }
-  .option {
+  .options {
     flex-direction: row;
+  }
+  #setting .setting--wrap:not(.userClass) {
+    flex-direction: row;
+  }
+  #timeBlocks {
+    width: 95dvw;
   }
 }
 @media (max-width: 900px) {
-  .option {
+  .options {
+    flex-direction: column;
+  }
+  #setting .setting--wrap:not(.userClass) {
     flex-direction: column;
   }
 }
@@ -967,7 +1064,7 @@ body section {
   }
 }
 @media (max-width: 700px) {
-  .Timeline {
+  .timeline {
     grid-template-columns: repeat(3, 1fr);
   }
 }
@@ -982,21 +1079,30 @@ body section {
     height: unset;
     padding: 16px;
   }
+  #setting .setting--wrap {
+    flex-direction: row;
+  }
   .nickname-input {
     width: calc(100% - 4rem - 10px);
   }
-  .Timeline {
+  .timeTitle {
+    padding-left: 16px;
+  }
+  .timeline {
+    padding: 0 16px;
     gap: 10px;
   }
-  .Timeline--item {
+  .timeline--item {
     padding: 10px;
+    width: 33dvw;
   }
-  .Timeline--item:not(:last-child)::after {
+  .timeline--item:not(:last-child)::after {
     font-size: 14px;
     right: -10px;
   }
-  .thumb {
-    max-height: 64px;
+  .timeline--item .thumb {
+    height: 62px;
+    min-height: unset;
   }
   .slot-text {
     font-size: 12px;
@@ -1013,14 +1119,12 @@ body section {
   .btn-upload {
     width: 100%;
   }
-  .option--save {
+  .options--save {
     flex-direction: column;
     align-items: start;
   }
-  .option--save .save--btns {
+  .options--save .save--btns {
     justify-content: flex-start;
-    flex-direction: row-reverse;
-    width: 100%;
   }
 }
 /* =========================
@@ -1066,4 +1170,166 @@ body section {
 /* 재생 중 메뉴 숨김 처리 */
 body.is-playing .controller {
   display: none !important;
+}
+
+/* ========================================================
+   MODERNIZED DESIGN UPGRADE (SCSS)
+======================================================== */
+.options .setting--wrap > *,
+.users--profile {
+  background: var(--surface) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 12px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.options .setting--wrap > *:hover,
+.users--profile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4) !important;
+}
+
+.options--title input,
+.users--profile__nickname {
+  background: var(--input-inner-bg) !important;
+  border: 1px solid var(--input-border) !important;
+  color: var(--text-primary) !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+}
+.options--title input:focus,
+.users--profile__nickname:focus {
+  border-color: var(--primary) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+}
+
+.timeline {
+  display: flex;
+  gap: 16px;
+  padding: 20px 30px !important;
+}
+.timeline--item {
+  width: 180px;
+  flex-shrink: 0;
+  background: var(--surface) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  box-shadow: var(--shadow-card) !important;
+  border-radius: 14px !important;
+  padding: 14px !important;
+}
+.timeline--header {
+  color: var(--text-primary) !important;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.timeline .thumb .btn--upload {
+  border: 1px dashed rgba(108, 92, 231, 0.4) !important;
+  background: rgba(108, 92, 231, 0.03);
+  color: var(--text-secondary);
+  border-radius: 8px;
+}
+.timeline .thumb .btn--upload:hover {
+  background: rgba(108, 92, 231, 0.08);
+  border-color: var(--primary) !important;
+  color: var(--text-primary);
+}
+.timeline .slot-text {
+  background: var(--input-inner-bg) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 6px !important;
+  color: var(--text-primary) !important;
+  padding: 6px 10px !important;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.timeline .slot-text:focus {
+  border-color: var(--primary) !important;
+}
+
+@media (max-width: 600px) {
+  #setting {
+    padding: 20px 16px !important;
+  }
+  .timeline {
+    padding: 10px 16px !important;
+    gap: 12px !important;
+  }
+  .timeline--item {
+    width: 145px !important;
+    padding: 12px !important;
+    gap: 14px !important;
+  }
+  .timeline .thumb {
+    height: 75px !important;
+  }
+}
+@media (max-width: 600px) {
+  /* 1. 세팅 섹션 전체 패딩 및 간격 최적화 */
+  #setting {
+    padding: 16px;
+    gap: 12px;
+  }
+  #setting h2 {
+    font-size: 1.1rem;
+    margin-bottom: 4px;
+  }
+  /* 2. 환경 설정 카드를 2열 그레디언트/그리드로 압축 */
+  .options .setting--wrap {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .options .setting--wrap .options--save {
+    grid-column: span 2;
+    padding: 12px 14px !important;
+  }
+  .options .setting--wrap .options--time,
+  .options .setting--wrap .options--title {
+    padding: 12px 14px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    gap: 6px !important;
+  }
+  .options .setting--wrap .options--time .label-text,
+  .options .setting--wrap .options--title .label-text {
+    font-size: 12px;
+  }
+  .options .setting--wrap .options--save .save--btns {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .options .setting--wrap .options--save #autoSaveStatus {
+    font-size: 11px;
+  }
+  /* 3. 유저 설정(프로필)을 세로 2층 -> 가로 나란히(1열 2행)로 압축 */
+  .users {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+  .users--profile {
+    flex: 1;
+    padding: 12px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center;
+    gap: 8px !important;
+  }
+  .users--profile::before {
+    font-size: 11px;
+    align-self: flex-start;
+  }
+  .users--profile__img {
+    width: 3.2rem !important;
+    height: 3.2rem !important;
+  }
+  .users--profile__nickname {
+    width: 100% !important;
+    font-size: 12px;
+    padding: 6px 8px !important;
+    min-height: 32px !important;
+  }
 }/*# sourceMappingURL=mvp3.min.css.map */
