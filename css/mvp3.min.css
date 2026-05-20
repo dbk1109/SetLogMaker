@@ -1165,7 +1165,9 @@ body input:focus {
   #leftWrap {
     gap: 20px;
   }
-  #leftWrap .title,
+  #leftWrap .title {
+    padding: 16px 0;
+  }
   #setting,
   .timeTitle,
   .timeline {
