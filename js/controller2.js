@@ -626,7 +626,20 @@ const APP_UI = {
       });
     };
 
-    activateNewVideo();
+    return new Promise((resolve) => {
+      const finish = () => {
+        activateNewVideo();
+        resolve();
+      };
+
+      if ("requestVideoFrameCallback" in newVideo) {
+        newVideo.requestVideoFrameCallback(() => {
+          finish();
+        });
+      } else {
+        setTimeout(finish, 120);
+      }
+    });
   },
 
   getFormattedTime(rawTime) {

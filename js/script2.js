@@ -227,9 +227,10 @@ const APP_CORE = {
     this.currentIndex = index;
     const slot = this.state.slots[index];
     if (!slot) return;
-
-    this.syncUserVisual("user1", slot);
-    this.syncUserVisual("user2", slot);
+    await Promise.all([
+      this.syncUserVisual("user1", slot),
+      this.syncUserVisual("user2", slot)
+    ]);
     this.updateDots(index);
     this.render24CircleIndicators();
   },
@@ -253,7 +254,7 @@ const APP_CORE = {
     ) {
       const nextVideo = this.createVideo(data.videoURL);
       back.appendChild(nextVideo);
-      window.APP_UI.performVideoExchange(nextVideo, back);
+      return window.APP_UI.performVideoExchange(nextVideo, back);
     } else {
       back.innerHTML = "";
       if (data.videoURL) {
