@@ -1129,13 +1129,17 @@ body {
 
   #fullscreenWrap {
     width: 100%;
-    margin: 0 0 20px 0;
+    margin: 0;
     padding: 0;
     &:fullscreen #visual#visual {
       width: 100dvw;
       height: 100vh;
       transform: scale(1);
     }
+  }
+  #visual {
+    width: 100dvw;
+    height: 100dvh;
   }
 }
 
