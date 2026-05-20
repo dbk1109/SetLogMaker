@@ -52,6 +52,7 @@
   /* size */
   --layoutGap: 30px;
   --innerBoxGap: 10px;
+  --title-height: 22px;
 }
 
 
@@ -85,9 +86,9 @@
   display: flex;
   align-items: center;
   position: absolute;
-  top: 0;
+  bottom: 0;
   width: 40px;
-  height: 100%;
+  height: calc(100% - var(--title-height));
   z-index: 2;
   pointer-events: none;
   transition: all 0.3s ease;
@@ -425,6 +426,7 @@ body {
   max-height: 500px;
   gap: var(--innerBoxGap);
   position: relative;
+  overflow: hidden;
   &::before {
     @include scroll-indicator("left");
   }
@@ -1016,6 +1018,7 @@ body {
 @media (max-width: 600px) {
   :root {
     --layoutGap: 14px;
+    --title-height: 135px;
   }
   body {
     gap: 20px;
