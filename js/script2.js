@@ -6,10 +6,30 @@
 
 const APP_CORE = {
   TIMES: [
-    "04:00", "05:00", "06:00", "07:00", "08:00", "09:00",
-    "10:00", "11:00", "12:00", "13:00", "14:00", "15:00",
-    "16:00", "17:00", "18:00", "19:00", "20:00", "21:00",
-    "22:00", "23:00", "00:00", "01:00", "02:00", "03:00",
+    "04:00",
+    "05:00",
+    "06:00",
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
+    "22:00",
+    "23:00",
+    "00:00",
+    "01:00",
+    "02:00",
+    "03:00",
   ],
 
   state: {
@@ -17,7 +37,7 @@ const APP_CORE = {
     is24h: false,
     title: "",
     profiles: { user1: "", user2: "" },
-    nicknames: { user1: "", user2: "" }
+    nicknames: { user1: "", user2: "" },
   },
 
   currentIndex: 0,
@@ -48,6 +68,7 @@ const APP_CORE = {
 
   renderAll() {
     this.renderTimeline();
+    this.render24CircleIndicators();
     if (window.APP_UI && typeof window.APP_UI.initDots === "function") {
       window.APP_UI.initDots(this.getPlayableIndexes());
     } else {
@@ -78,7 +99,7 @@ const APP_CORE = {
 
       item.innerHTML = `
         <div class="timeline--header">
-          <span class="time-label">${displayTime}</span>
+          <p class="time-label">${displayTime}</p>
         </div>
         
         <div id="timeline-user1" class="timeline--wrap SettingUser" data-user="user1" data-index="${index}">
@@ -122,13 +143,13 @@ const APP_CORE = {
 
   renderDots() {
     // 1. 실시간으로 현재 활성화된(플레이 가능한) 인덱스 배열을 가져옵니다.
-    const playableIndexes = this.getPlayableIndexes(); 
-    
+    const playableIndexes = this.getPlayableIndexes();
+
     // 2. 컨트롤러(APP_UI)가 존재하면, 새로고침 없이 실시간 개수를 반영하도록 initDots를 다시 실행합니다.
     if (window.APP_UI && window.APP_UI.initDots) {
       window.APP_UI.initDots(playableIndexes);
       // 초기 렌더링 시 현재 활성화된 인덱스로 도트 위치도 업데이트
-      if (typeof this.state.currentSlotIndex !== 'undefined') {
+      if (typeof this.state.currentSlotIndex !== "undefined") {
         this.updateDots(this.state.currentSlotIndex);
       }
       return;
@@ -138,7 +159,7 @@ const APP_CORE = {
     const dotsWrap = document.querySelector(".Menu--dots");
     if (!dotsWrap) return;
     dotsWrap.innerHTML = "";
-    
+
     // 조건 2: 10개 이하일 때 중앙 정렬을 위한 클래스 분기
     if (playableIndexes.length <= 10) {
       dotsWrap.classList.add("justify-center");
@@ -210,6 +231,7 @@ const APP_CORE = {
     this.syncUserVisual("user1", slot);
     this.syncUserVisual("user2", slot);
     this.updateDots(index);
+    this.render24CircleIndicators();
   },
 
   syncUserVisual(user, slot) {
@@ -309,8 +331,16 @@ const APP_CORE = {
       return {
         id: savedSlot.id || crypto.randomUUID(),
         time: savedSlot.time,
-        user1: { text: savedSlot.user1.text, video: null, videoURL: savedSlot.user1.videoURL },
-        user2: { text: savedSlot.user2.text, video: null, videoURL: savedSlot.user2.videoURL },
+        user1: {
+          text: savedSlot.user1.text,
+          video: null,
+          videoURL: savedSlot.user1.videoURL,
+        },
+        user2: {
+          text: savedSlot.user2.text,
+          video: null,
+          videoURL: savedSlot.user2.videoURL,
+        },
       };
     });
   },
@@ -332,10 +362,72 @@ const APP_CORE = {
 
   async startPlayback() {
     if (window.isPlaying) return;
+
+    const playableIndexes = this.getPlayableIndexes();
+    const preloader = document.querySelector("#videoPreloader");
+    const progressText = document.querySelector("#preloadProgress");
+
+    // [Step 1] 모바일 프리로드 연출 시작
+    if (preloader) preloader.classList.add("active");
+    if (progressText) progressText.textContent = "0";
+
+    let loadedCount = 0;
+    const totalToLoad = playableIndexes.length * 2; // user1, user2 한 쌍 기준
+
+    // 플레이 리스트 전체 비디오 미리 웜업 로딩하는 헬퍼 프로미스
+    const preloadVideo = (url) => {
+      return new Promise((resolve) => {
+        if (!url) {
+          loadedCount++;
+          if (progressText)
+            progressText.textContent = Math.round(
+              (loadedCount / totalToLoad) * 100,
+            );
+          return resolve();
+        }
+        const v = document.createElement("video");
+        v.src = url;
+        v.muted = true;
+        v.preload = "auto";
+        v.playsinline = true;
+
+        const onLoaded = () => {
+          loadedCount++;
+          if (progressText)
+            progressText.textContent = Math.round(
+              (loadedCount / totalToLoad) * 100,
+            );
+          v.removeEventListener("loadeddata", onLoaded);
+          v.removeEventListener("error", onLoaded);
+          resolve();
+        };
+
+        // 첫 프레임 렌더링 준비 완료 지점 추적
+        v.addEventListener("loadeddata", onLoaded);
+        v.addEventListener("error", onLoaded);
+        v.load(); // 강제 스트리밍 로드 명령
+      });
+    };
+
+    // 모든 슬롯 비디오 동시 예열 로드 실행
+    const loadPromises = [];
+    playableIndexes.forEach((idx) => {
+      const slot = this.state.slots[idx];
+      loadPromises.push(preloadVideo(slot.user1.videoURL));
+      loadPromises.push(
+        slot.user2 ? preloadVideo(slot.user2.videoURL) : Promise.resolve(),
+      );
+    });
+
+    // 네트워크 리소스 확보 완료까지 완벽 대기
+    await Promise.all(loadPromises);
+
+    // [Step 2] 로딩 UI 종료 및 본 재생 시작
+    if (preloader) preloader.classList.remove("active");
+
     window.isPlaying = true;
     if (window.APP_UI) window.APP_UI.updatePlayBtnUI();
 
-    const playableIndexes = this.getPlayableIndexes();
     const startTime = performance.now();
     let isCompleted = true;
 
@@ -386,6 +478,55 @@ const APP_CORE = {
     });
 
     this.updateCurrentVisual();
+  },
+
+  render24CircleIndicators() {
+    const indicatorContainer = document.querySelector(".timeTitle .indicator");
+    if (!indicatorContainer) return;
+
+    indicatorContainer.innerHTML = "";
+
+    this.state.slots.forEach((slot, index) => {
+      const dot = document.createElement("div");
+      dot.className = "time-dot";
+      dot.dataset.targetIndex = index;
+      dot.innerText = (index + 4) % 24;
+
+      // 규칙 1: 현재 유저가 스크롤 보거나 선택하고 있는 현재 시간 블록 위치 가리키기
+      if (index === this.currentIndex) {
+        dot.classList.add("is-current");
+      }
+
+      // 규칙 2: 내용(user1 혹은 user2의 비디오 또는 텍스트 중 하나라도 존재할 때) 스위칭
+      const hasU1Content =
+        slot.user1.videoURL ||
+        (slot.user1.text && slot.user1.text.trim() !== "");
+      const hasU2Content =
+        slot.user2 &&
+        (slot.user2.videoURL ||
+          (slot.user2.text && slot.user2.text.trim() !== ""));
+
+      if (hasU1Content || hasU2Content) {
+        dot.classList.add("is-filled");
+      }
+
+      // 인디케이터의 개별 동그라미를 누르면 해당 타임라인 줄로 스크롤/이동
+      dot.addEventListener("click", () => {
+        this.syncVisual(index);
+        const targetElement = document.querySelector(
+          `.timeline--item[data-index="${index}"]`,
+        );
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "center",
+          });
+        }
+      });
+
+      indicatorContainer.appendChild(dot);
+    });
   },
 };
 

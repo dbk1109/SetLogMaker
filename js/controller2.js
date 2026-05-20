@@ -216,16 +216,39 @@ const APP_UI = {
     document.addEventListener("input", (e) => {
       if (e.target.classList.contains("slot-text")) {
         const input = e.target;
+        // user 데이터셋 바인딩 보정
         const user = input.dataset.user || (input.closest("#timeline-user1") ? "user1" : "user2");
         const index = Number(input.dataset.index);
         const slot = window.APP_CORE.state.slots[index];
 
         if (slot) {
           slot[user].text = input.value;
+          
+          // 글자 타이핑 시에는 무거운 비디오 재생기 리셋 없이 텍스트 노드와 도트만 실시간 미러링
           if (window.APP_CORE.currentIndex === index) {
-            window.APP_CORE.syncVisual(index);
+            const visual = document.querySelector(`#${user}`);
+            if (visual) {
+              const textEl = visual.querySelector(".Videos--users__middle p");
+              const hasVideo = !!slot[user].videoURL;
+              const hasText = input.value && input.value.trim() !== "";
+
+              if (textEl) {
+                if (hasVideo && !hasText) {
+                  textEl.textContent = "";
+                } else if (!hasVideo && !hasText) {
+                  textEl.textContent = "💤";
+                } else {
+                  textEl.textContent = input.value;
+                }
+              }
+            }
           }
-          // 글자 한 자 한 자 입력될 때마다 저장소를 업데이트합니다.
+          
+          // 24개 서클 인디케이터 상태 실시간 업데이트
+          if (window.APP_CORE && typeof window.APP_CORE.render24CircleIndicators === "function") {
+            window.APP_CORE.render24CircleIndicators();
+          }
+
           this.saveToLocalStorage(); 
         }
       }

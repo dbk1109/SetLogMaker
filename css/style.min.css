@@ -2,9 +2,9 @@
 /* =========================
    FONT
 ========================= */
-@import url("https://fonts.googleapis.com/css?family=Black+Han+Sans:400");
+@import url("https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@100..900&display=swap");
 * {
-  font-family: "NanumSquareNeo";
+  font-family: "Noto Sans KR", sans-serif;
   box-sizing: border-box;
 }
 
