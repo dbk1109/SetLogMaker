@@ -6,10 +6,30 @@
 
 const APP_CORE = {
   TIMES: [
-    "04:00", "05:00", "06:00", "07:00", "08:00", "09:00",
-    "10:00", "11:00", "12:00", "13:00", "14:00", "15:00",
-    "16:00", "17:00", "18:00", "19:00", "20:00", "21:00",
-    "22:00", "23:00", "00:00", "01:00", "02:00", "03:00"
+    "04:00",
+    "05:00",
+    "06:00",
+    "07:00",
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
+    "19:00",
+    "20:00",
+    "21:00",
+    "22:00",
+    "23:00",
+    "00:00",
+    "01:00",
+    "02:00",
+    "03:00",
   ],
 
   state: {
@@ -22,7 +42,7 @@ const APP_CORE = {
 
   currentIndex: 0,
   EMPTY_VIDEO: "./assets/black.mp4",
-  syncTimer: null, // [추가] 실시간 타이머 저장소
+  syncTimer: null, // 실시간 타이머 저장소
 
   init() {
     window.isPlaying = false;
@@ -332,30 +352,48 @@ const APP_CORE = {
      PLAYBACK SYSTEM
   ========================= */
 
-  // [추가] 실시간 싱크 하이재킹 엔진 작동 함수
+  // 실시간 싱크 하이재킹 엔진 작동 함수
   startLiveSyncCheck() {
     if (this.syncTimer) clearInterval(this.syncTimer);
 
     this.syncTimer = setInterval(() => {
-      // 화면에 활성화되어 돌고 있는 유저 1과 유저 2의 실시간 비디오 태그 감지
       const u1Video = document.querySelector("#user1 video.active");
       const u2Video = document.querySelector("#user2 video.active");
 
-      // 두 비디오가 다 로드되어 한창 재생 중일 때만 연동 개입
       if (u1Video && u2Video && !u1Video.paused && !u2Video.paused) {
-        const diff = Math.abs(u1Video.currentTime - u2Video.currentTime);
+        const diff = u1Video.currentTime - u2Video.currentTime; // 유저1 기준 오차
+        const absDiff = Math.abs(diff);
 
-        // 모바일 사양 한계로 0.05초(약 1.5프레임) 이상 시간차가 벌어지면 실행
-        if (diff > 0.05) {
-          // 유저 1을 기준축으로 삼고 유저 2의 타임라인을 강제로 끌어당겨 싱크 조율
+        // [개선 1] 눈에 띄지 않는 미세한 차이(0.12초 이내)는 그냥 눈감아줍니다 (정속 재생)
+        if (absDiff <= 0.12) {
+          u2Video.playbackRate = 1.0;
+          return;
+        }
+
+        // [개선 2] 오차가 0.12초 ~ 0.4초 사이일 때는 배속을 미세하게 조절해 부드럽게 따라잡기 (끊김 없음!)
+        if (absDiff > 0.12 && absDiff <= 0.4) {
+          if (diff > 0) {
+            // 유저 2가 느린 상황 -> 유저 2의 속도를 1.15배속으로 올려서 부드럽게 추격
+            u2Video.playbackRate = 1.15;
+          } else {
+            // 유저 2가 더 빠른 상황 -> 유저 2의 속도를 0.85배속으로 낮춰서 대기
+            u2Video.playbackRate = 0.85;
+          }
+          console.log(
+            `[Soft Sync] 미세 속도 조절 작동 중... 오차: ${(diff * 1000).toFixed(0)}ms`,
+          );
+        }
+        // [개선 3] 오차가 0.4초 이상으로 너무 크게 벌어졌을 때만 어쩔 수 없이 텔레포트(강제 동기화)
+        else if (absDiff > 0.4) {
           u2Video.currentTime = u1Video.currentTime;
-          console.log(`[Live Sync] 모바일 디코더 밀림 감지 (${(diff * 1000).toFixed(0)}ms) -> 유저2 실시간 보정 완료.`);
+          u2Video.playbackRate = 1.0;
+          console.log(`[Hard Sync] 오차가 너무 커 강제 도킹 수행.`);
         }
       }
-    }, 150); // 0.15초마다 촘촘하게 감시 레이더 가동
+    }, 250); // 감시 주기도 0.25초로 늦춰 모바일 AP 과부하 방지
   },
 
-  // [추가] 싱크 체크 중지 함수
+  // 싱크 체크 중지 함수
   stopLiveSyncCheck() {
     if (this.syncTimer) {
       clearInterval(this.syncTimer);
@@ -370,8 +408,8 @@ const APP_CORE = {
     const preloader = document.querySelector("#videoPreloader");
     const progressText = document.querySelector("#preloadProgress");
 
-    if (preloader) preloader.classList.add("active");
     if (progressText) progressText.textContent = "0";
+    if (preloader) preloader.classList.add("active");
 
     let loadedCount = 0;
     const totalToLoad = playableIndexes.length * 2;
@@ -381,7 +419,9 @@ const APP_CORE = {
         if (!url) {
           loadedCount++;
           if (progressText)
-            progressText.textContent = Math.round((loadedCount / totalToLoad) * 100);
+            progressText.textContent = Math.round(
+              (loadedCount / totalToLoad) * 100,
+            );
           return resolve();
         }
         const v = document.createElement("video");
@@ -393,7 +433,9 @@ const APP_CORE = {
         const onLoaded = () => {
           loadedCount++;
           if (progressText)
-            progressText.textContent = Math.round((loadedCount / totalToLoad) * 100);
+            progressText.textContent = Math.round(
+              (loadedCount / totalToLoad) * 100,
+            );
           v.removeEventListener("loadeddata", onLoaded);
           v.removeEventListener("error", onLoaded);
           resolve();
