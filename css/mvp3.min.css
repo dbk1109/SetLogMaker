@@ -906,7 +906,7 @@ body input:focus {
   -o-object-fit: cover;
      object-fit: cover;
   z-index: 0;
-  will-change: opacity;
+  will-change: auto;
 }
 .Videos--users__back video.active {
   opacity: 1;

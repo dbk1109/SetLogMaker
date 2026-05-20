@@ -196,7 +196,7 @@ const APP_CORE = {
     video.src = url;
     video.muted = true;
     video.autoplay = true;
-    video.preload = "metadata";
+    video.preload = "auto";
     video.setAttribute("playsinline", "");
     video.setAttribute("muted", "");
 

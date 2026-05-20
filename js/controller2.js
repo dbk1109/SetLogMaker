@@ -603,6 +603,7 @@ const APP_UI = {
   performVideoExchange(newVideo, backElement) {
     const oldVideos = Array.from(backElement.querySelectorAll("video.active"));
     newVideo.style.visibility = "visible";
+    newVideo.currentTime = 0;
 
     const playPromise = newVideo.play();
     if (playPromise !== undefined) {
@@ -625,11 +626,7 @@ const APP_UI = {
       });
     };
 
-    if ("requestVideoFrameCallback" in newVideo) {
-      newVideo.requestVideoFrameCallback(() => { activateNewVideo(); });
-    } else {
-      setTimeout(activateNewVideo, 220);
-    }
+    activateNewVideo();
   },
 
   getFormattedTime(rawTime) {
