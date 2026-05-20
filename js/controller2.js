@@ -603,7 +603,10 @@ const APP_UI = {
   performVideoExchange(newVideo, backElement) {
     const oldVideos = Array.from(backElement.querySelectorAll("video.active"));
     newVideo.style.visibility = "visible";
-    newVideo.currentTime = 0;
+
+    // 모바일 브라우저의 즉시 재생 인코딩 최적화를 위해 처음에 살짝 대기 유도
+    newVideo.muted = true;
+    newVideo.playsInline = true;
 
     const playPromise = newVideo.play();
     if (playPromise !== undefined) {
@@ -626,20 +629,14 @@ const APP_UI = {
       });
     };
 
-    return new Promise((resolve) => {
-      const finish = () => {
-        activateNewVideo();
-        resolve();
-      };
-
-      if ("requestVideoFrameCallback" in newVideo) {
-        newVideo.requestVideoFrameCallback(() => {
-          finish();
-        });
-      } else {
-        setTimeout(finish, 120);
-      }
-    });
+    if ("requestVideoFrameCallback" in newVideo) {
+      newVideo.requestVideoFrameCallback(() => { 
+        activateNewVideo(); 
+      });
+    } else {
+      // rVFC 미지원 브라우저 대응용 타임아웃을 모바일 디바이스 성능을 감안해 250ms로 소폭 상향
+      setTimeout(activateNewVideo, 250); 
+    }
   },
 
   getFormattedTime(rawTime) {

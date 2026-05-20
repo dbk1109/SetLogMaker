@@ -6,30 +6,10 @@
 
 const APP_CORE = {
   TIMES: [
-    "04:00",
-    "05:00",
-    "06:00",
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
-    "22:00",
-    "23:00",
-    "00:00",
-    "01:00",
-    "02:00",
-    "03:00",
+    "04:00", "05:00", "06:00", "07:00", "08:00", "09:00",
+    "10:00", "11:00", "12:00", "13:00", "14:00", "15:00",
+    "16:00", "17:00", "18:00", "19:00", "20:00", "21:00",
+    "22:00", "23:00", "00:00", "01:00", "02:00", "03:00"
   ],
 
   state: {
@@ -42,6 +22,7 @@ const APP_CORE = {
 
   currentIndex: 0,
   EMPTY_VIDEO: "./assets/black.mp4",
+  syncTimer: null, // [추가] 실시간 타이머 저장소
 
   init() {
     window.isPlaying = false;
@@ -142,25 +123,20 @@ const APP_CORE = {
   ========================= */
 
   renderDots() {
-    // 1. 실시간으로 현재 활성화된(플레이 가능한) 인덱스 배열을 가져옵니다.
     const playableIndexes = this.getPlayableIndexes();
 
-    // 2. 컨트롤러(APP_UI)가 존재하면, 새로고침 없이 실시간 개수를 반영하도록 initDots를 다시 실행합니다.
     if (window.APP_UI && window.APP_UI.initDots) {
       window.APP_UI.initDots(playableIndexes);
-      // 초기 렌더링 시 현재 활성화된 인덱스로 도트 위치도 업데이트
       if (typeof this.state.currentSlotIndex !== "undefined") {
         this.updateDots(this.state.currentSlotIndex);
       }
       return;
     }
 
-    // 컨트롤러가 없는 환경에서의 Fallback 처리
     const dotsWrap = document.querySelector(".Menu--dots");
     if (!dotsWrap) return;
     dotsWrap.innerHTML = "";
 
-    // 조건 2: 10개 이하일 때 중앙 정렬을 위한 클래스 분기
     if (playableIndexes.length <= 10) {
       dotsWrap.classList.add("justify-center");
     } else {
@@ -178,7 +154,6 @@ const APP_CORE = {
       window.APP_UI.updateDots(index, this.getPlayableIndexes());
       return;
     }
-    // Fallback 업데이트 로직
     const playableIndexes = this.getPlayableIndexes();
     const activePos = playableIndexes.indexOf(index);
     const dots = document.querySelectorAll(".Menu--dots span");
@@ -196,7 +171,7 @@ const APP_CORE = {
     video.src = url;
     video.muted = true;
     video.autoplay = true;
-    video.preload = "auto";
+    video.preload = "metadata";
     video.setAttribute("playsinline", "");
     video.setAttribute("muted", "");
 
@@ -227,10 +202,9 @@ const APP_CORE = {
     this.currentIndex = index;
     const slot = this.state.slots[index];
     if (!slot) return;
-    await Promise.all([
-      this.syncUserVisual("user1", slot),
-      this.syncUserVisual("user2", slot)
-    ]);
+
+    this.syncUserVisual("user1", slot);
+    this.syncUserVisual("user2", slot);
     this.updateDots(index);
     this.render24CircleIndicators();
   },
@@ -246,7 +220,6 @@ const APP_CORE = {
 
     if (!back || !timeEl || !textEl) return;
 
-    // 비디오 재생/교체 로직
     if (
       window.APP_UI &&
       typeof window.APP_UI.performVideoExchange === "function" &&
@@ -254,7 +227,7 @@ const APP_CORE = {
     ) {
       const nextVideo = this.createVideo(data.videoURL);
       back.appendChild(nextVideo);
-      return window.APP_UI.performVideoExchange(nextVideo, back);
+      window.APP_UI.performVideoExchange(nextVideo, back);
     } else {
       back.innerHTML = "";
       if (data.videoURL) {
@@ -264,12 +237,10 @@ const APP_CORE = {
       }
     }
 
-    // 시간 출력
     timeEl.textContent = window.APP_UI
       ? window.APP_UI.getFormattedTime(slot.time)
       : slot.time;
 
-    // 유저별 개별 텍스트 출력 분기 규칙
     const hasText = data.text && data.text.trim() !== "";
     const hasVideo = !!data.videoURL;
 
@@ -361,6 +332,37 @@ const APP_CORE = {
      PLAYBACK SYSTEM
   ========================= */
 
+  // [추가] 실시간 싱크 하이재킹 엔진 작동 함수
+  startLiveSyncCheck() {
+    if (this.syncTimer) clearInterval(this.syncTimer);
+
+    this.syncTimer = setInterval(() => {
+      // 화면에 활성화되어 돌고 있는 유저 1과 유저 2의 실시간 비디오 태그 감지
+      const u1Video = document.querySelector("#user1 video.active");
+      const u2Video = document.querySelector("#user2 video.active");
+
+      // 두 비디오가 다 로드되어 한창 재생 중일 때만 연동 개입
+      if (u1Video && u2Video && !u1Video.paused && !u2Video.paused) {
+        const diff = Math.abs(u1Video.currentTime - u2Video.currentTime);
+
+        // 모바일 사양 한계로 0.05초(약 1.5프레임) 이상 시간차가 벌어지면 실행
+        if (diff > 0.05) {
+          // 유저 1을 기준축으로 삼고 유저 2의 타임라인을 강제로 끌어당겨 싱크 조율
+          u2Video.currentTime = u1Video.currentTime;
+          console.log(`[Live Sync] 모바일 디코더 밀림 감지 (${(diff * 1000).toFixed(0)}ms) -> 유저2 실시간 보정 완료.`);
+        }
+      }
+    }, 150); // 0.15초마다 촘촘하게 감시 레이더 가동
+  },
+
+  // [추가] 싱크 체크 중지 함수
+  stopLiveSyncCheck() {
+    if (this.syncTimer) {
+      clearInterval(this.syncTimer);
+      this.syncTimer = null;
+    }
+  },
+
   async startPlayback() {
     if (window.isPlaying) return;
 
@@ -368,22 +370,18 @@ const APP_CORE = {
     const preloader = document.querySelector("#videoPreloader");
     const progressText = document.querySelector("#preloadProgress");
 
-    // [Step 1] 모바일 프리로드 연출 시작
     if (preloader) preloader.classList.add("active");
     if (progressText) progressText.textContent = "0";
 
     let loadedCount = 0;
-    const totalToLoad = playableIndexes.length * 2; // user1, user2 한 쌍 기준
+    const totalToLoad = playableIndexes.length * 2;
 
-    // 플레이 리스트 전체 비디오 미리 웜업 로딩하는 헬퍼 프로미스
     const preloadVideo = (url) => {
       return new Promise((resolve) => {
         if (!url) {
           loadedCount++;
           if (progressText)
-            progressText.textContent = Math.round(
-              (loadedCount / totalToLoad) * 100,
-            );
+            progressText.textContent = Math.round((loadedCount / totalToLoad) * 100);
           return resolve();
         }
         const v = document.createElement("video");
@@ -395,22 +393,18 @@ const APP_CORE = {
         const onLoaded = () => {
           loadedCount++;
           if (progressText)
-            progressText.textContent = Math.round(
-              (loadedCount / totalToLoad) * 100,
-            );
+            progressText.textContent = Math.round((loadedCount / totalToLoad) * 100);
           v.removeEventListener("loadeddata", onLoaded);
           v.removeEventListener("error", onLoaded);
           resolve();
         };
 
-        // 첫 프레임 렌더링 준비 완료 지점 추적
         v.addEventListener("loadeddata", onLoaded);
         v.addEventListener("error", onLoaded);
-        v.load(); // 강제 스트리밍 로드 명령
+        v.load();
       });
     };
 
-    // 모든 슬롯 비디오 동시 예열 로드 실행
     const loadPromises = [];
     playableIndexes.forEach((idx) => {
       const slot = this.state.slots[idx];
@@ -420,14 +414,15 @@ const APP_CORE = {
       );
     });
 
-    // 네트워크 리소스 확보 완료까지 완벽 대기
     await Promise.all(loadPromises);
 
-    // [Step 2] 로딩 UI 종료 및 본 재생 시작
     if (preloader) preloader.classList.remove("active");
 
     window.isPlaying = true;
     if (window.APP_UI) window.APP_UI.updatePlayBtnUI();
+
+    // 재생이 진짜 시작되는 시점에 실시간 동기화 감시 기동!
+    this.startLiveSyncCheck();
 
     const startTime = performance.now();
     let isCompleted = true;
@@ -453,6 +448,9 @@ const APP_CORE = {
 
   stopPlayback(isCompleted = false) {
     window.isPlaying = false;
+
+    // 플레이백이 끝나거나 사용자가 멈추면 실시간 감시 레이더 즉시 해제
+    this.stopLiveSyncCheck();
 
     if (window.APP_UI) {
       window.APP_UI.updatePlayBtnUI();
@@ -493,12 +491,10 @@ const APP_CORE = {
       dot.dataset.targetIndex = index;
       dot.innerText = (index + 4) % 24;
 
-      // 규칙 1: 현재 유저가 스크롤 보거나 선택하고 있는 현재 시간 블록 위치 가리키기
       if (index === this.currentIndex) {
         dot.classList.add("is-current");
       }
 
-      // 규칙 2: 내용(user1 혹은 user2의 비디오 또는 텍스트 중 하나라도 존재할 때) 스위칭
       const hasU1Content =
         slot.user1.videoURL ||
         (slot.user1.text && slot.user1.text.trim() !== "");
@@ -511,7 +507,6 @@ const APP_CORE = {
         dot.classList.add("is-filled");
       }
 
-      // 인디케이터의 개별 동그라미를 누르면 해당 타임라인 줄로 스크롤/이동
       dot.addEventListener("click", () => {
         this.syncVisual(index);
         const targetElement = document.querySelector(
