@@ -600,21 +600,23 @@ const APP_UI = {
     }
   },
 
-  performVideoExchange(newVideo, backElement) {
+  performVideoExchange(newVideo, backElement, timeEl, targetTime, textEl, targetText) {
     const oldVideos = Array.from(backElement.querySelectorAll("video.active"));
     newVideo.style.visibility = "visible";
-
-    // 모바일 브라우저의 즉시 재생 인코딩 최적화를 위해 처음에 살짝 대기 유도
-    newVideo.muted = true;
-    newVideo.playsInline = true;
 
     const playPromise = newVideo.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {});
     }
 
+    // 비디오 첫 프레임 렌더링이 완료되어 active 클래스가 붙는 바로 그 역사적인 순간!
     const activateNewVideo = () => {
       newVideo.classList.add("active");
+      
+      // [추가] 시간과 텍스트도 비디오 화면이 켜지는 이 순간에 칼같이 같이 바꿉니다!
+      if (timeEl && targetTime) timeEl.textContent = targetTime;
+      if (textEl && targetText !== undefined) textEl.textContent = targetText;
+
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           oldVideos.forEach((v) => {
@@ -629,13 +631,11 @@ const APP_UI = {
       });
     };
 
+    // 모바일 특화: 첫 프레임이 그려지는 타이밍 감지
     if ("requestVideoFrameCallback" in newVideo) {
-      newVideo.requestVideoFrameCallback(() => { 
-        activateNewVideo(); 
-      });
+      newVideo.requestVideoFrameCallback(() => { activateNewVideo(); });
     } else {
-      // rVFC 미지원 브라우저 대응용 타임아웃을 모바일 디바이스 성능을 감안해 250ms로 소폭 상향
-      setTimeout(activateNewVideo, 250); 
+      setTimeout(activateNewVideo, 220);
     }
   },
 

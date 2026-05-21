@@ -238,10 +238,10 @@ body {
     background: var(--bg);
 
     #visual {
-      width: 46dvh;
+      width: $visualWidth;
       max-width: 100dvw;
-      //height: 80dvh;
-      //transform: scale(1.2);
+      height: 80dvh;
+      transform: scale(1.2);
       position: initial;
     }
   }
@@ -572,7 +572,7 @@ body {
   overflow: hidden;
 
   border: 5px solid blueviolet;
-  border-radius: clamp(20px, 2.5vw, 36px);
+  border-radius: 44px;
 
   background: white;
 
@@ -779,7 +779,7 @@ body {
 }
 
 .Last {
-  height: 35px;
+  height: 10px;
 }
 
 
@@ -974,6 +974,7 @@ body {
     flex-direction: column;
     align-items: center;
 
+    h1 { font-size: 130%;}
     h2 { font-size: 1.2rem;}
 
     section {
@@ -1134,9 +1135,9 @@ body {
     width: 100%;
     margin: 0;
     padding: 0;
-    &:fullscreen #visual#visual {
+    &:fullscreen #visual {
       width: 100dvw;
-      height: 100vh;
+      height: 100dvh;
       transform: scale(1);
     }
   }

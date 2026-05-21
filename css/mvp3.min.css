@@ -317,8 +317,10 @@ body input:focus {
   background: var(--bg);
 }
 #fullscreenWrap:fullscreen #visual {
-  width: 46dvh;
+  width: 420px;
   max-width: 100dvw;
+  height: 80dvh;
+  transform: scale(1.2);
   position: initial;
 }
 
@@ -749,7 +751,7 @@ body input:focus {
   padding: calc(24px + env(safe-area-inset-top)) 10px calc(24px + env(safe-area-inset-bottom));
   overflow: hidden;
   border: 5px solid blueviolet;
-  border-radius: clamp(20px, 2.5vw, 36px);
+  border-radius: 44px;
   background: white;
   position: fixed;
   top: 30px;
@@ -952,7 +954,7 @@ body input:focus {
 }
 
 .Last {
-  height: 35px;
+  height: 10px;
 }
 
 /* =========================
@@ -1121,6 +1123,9 @@ body input:focus {
     flex-direction: column;
     align-items: center;
   }
+  body h1 {
+    font-size: 130%;
+  }
   body h2 {
     font-size: 1.2rem;
   }
@@ -1257,9 +1262,9 @@ body input:focus {
     margin: 0;
     padding: 0;
   }
-  #fullscreenWrap:fullscreen #visual#visual {
+  #fullscreenWrap:fullscreen #visual {
     width: 100dvw;
-    height: 100vh;
+    height: 100dvh;
     transform: scale(1);
   }
   #visual {

@@ -5,32 +5,7 @@
 ======================================================== */
 
 const APP_CORE = {
-  TIMES: [
-    "04:00",
-    "05:00",
-    "06:00",
-    "07:00",
-    "08:00",
-    "09:00",
-    "10:00",
-    "11:00",
-    "12:00",
-    "13:00",
-    "14:00",
-    "15:00",
-    "16:00",
-    "17:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
-    "22:00",
-    "23:00",
-    "00:00",
-    "01:00",
-    "02:00",
-    "03:00",
-  ],
+  TIMES: [ "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00", "20:00", "21:00", "22:00", "23:00", "00:00", "01:00", "02:00", "03:00", ],
 
   state: {
     slots: [],
@@ -214,6 +189,64 @@ const APP_CORE = {
     return video;
   },
 
+  syncUserVisual(user, slot) {
+    const data = slot[user];
+    const visual = document.querySelector(`#${user}`);
+    if (!visual) return;
+
+    const back = visual.querySelector(".Videos--users__back");
+    const timeEl = visual.querySelector(".Videos--users__middle h3");
+    const textEl = visual.querySelector(".Videos--users__middle p");
+
+    if (!back || !timeEl || !textEl) return;
+
+    // 표시할 시간과 텍스트 미리 계산
+    const targetTime = window.APP_UI
+      ? window.APP_UI.getFormattedTime(slot.time)
+      : slot.time;
+
+    const hasText = data.text && data.text.trim() !== "";
+    const hasVideo = !!data.videoURL;
+    let targetText = "";
+    if (hasVideo && !hasText) targetText = "";
+    else if (!hasVideo && !hasText) targetText = "💤";
+    else targetText = data.text;
+
+    // 비디오를 갈아끼울 때 시간과 텍스트 엘리먼트 정보, 바뀔 글자 같이 인자로
+    if (
+      window.APP_UI &&
+      typeof window.APP_UI.performVideoExchange === "function" &&
+      data.videoURL
+    ) {
+      const nextVideo = this.createVideo(data.videoURL);
+      back.appendChild(nextVideo);
+
+      // 배턴 터치 위임
+      window.APP_UI.performVideoExchange(
+        nextVideo,
+        back,
+        timeEl,
+        targetTime,
+        textEl,
+        targetText,
+      );
+    } else {
+      // 비디오가 없는 슬롯(텍스트만 있거나 💤 일 때)은 이전과 동일하게 즉시 변경
+      back.innerHTML = "";
+      timeEl.textContent = targetTime;
+      textEl.textContent = targetText;
+
+      if (data.videoURL) {
+        const video = this.createVideo(data.videoURL);
+        back.appendChild(video);
+        video.play().catch(() => {});
+      }
+    }
+
+    this.updateDots(this.currentIndex);
+    this.render24CircleIndicators();
+  },
+
   /* =========================
      VISUAL SYNC
   ========================= */
@@ -227,50 +260,6 @@ const APP_CORE = {
     this.syncUserVisual("user2", slot);
     this.updateDots(index);
     this.render24CircleIndicators();
-  },
-
-  syncUserVisual(user, slot) {
-    const data = slot[user];
-    const visual = document.querySelector(`#${user}`);
-    if (!visual) return;
-
-    const back = visual.querySelector(".Videos--users__back");
-    const timeEl = visual.querySelector(".Videos--users__middle h3");
-    const textEl = visual.querySelector(".Videos--users__middle p");
-
-    if (!back || !timeEl || !textEl) return;
-
-    if (
-      window.APP_UI &&
-      typeof window.APP_UI.performVideoExchange === "function" &&
-      data.videoURL
-    ) {
-      const nextVideo = this.createVideo(data.videoURL);
-      back.appendChild(nextVideo);
-      window.APP_UI.performVideoExchange(nextVideo, back);
-    } else {
-      back.innerHTML = "";
-      if (data.videoURL) {
-        const video = this.createVideo(data.videoURL);
-        back.appendChild(video);
-        video.play().catch(() => {});
-      }
-    }
-
-    timeEl.textContent = window.APP_UI
-      ? window.APP_UI.getFormattedTime(slot.time)
-      : slot.time;
-
-    const hasText = data.text && data.text.trim() !== "";
-    const hasVideo = !!data.videoURL;
-
-    if (hasVideo && !hasText) {
-      textEl.textContent = "";
-    } else if (!hasVideo && !hasText) {
-      textEl.textContent = "💤";
-    } else {
-      textEl.textContent = data.text;
-    }
   },
 
   updateCurrentVisual() {
